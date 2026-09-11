@@ -410,7 +410,7 @@ export function InferenceScenario() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: "Model Weights", val: weightsPerCard, color: "border-indigo-500" },
-              { label: "KV Cache", val: kvPerCard, color: "border-emerald-500" },
+              { label: `KV Cache (ctx: ${store.contextLength}, b: ${store.batchSize})`, val: kvPerCard, color: "border-emerald-500" },
               { label: "Quantization Metadata", val: metadata, color: "border-amber-500" },
               { label: "Activations", val: activations, color: "border-pink-500" },
               { label: "OS Reserve", val: reserve, color: "border-slate-500" },

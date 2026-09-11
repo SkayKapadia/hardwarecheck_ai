@@ -3,25 +3,25 @@
     "modelId": "llama3-8b",
     "gpuId": "rtx4090",
     "quant": "FP16",
-    "tps": 120
+    "tps": 70
   },
   {
     "modelId": "llama3-8b",
     "gpuId": "rtx4090",
     "quant": "INT8",
-    "tps": 180
+    "tps": 95
   },
   {
     "modelId": "llama3-8b",
     "gpuId": "rtx4090",
     "quant": "INT4",
-    "tps": 220
+    "tps": 120
   },
   {
     "modelId": "llama3-8b",
     "gpuId": "rtx3090",
     "quant": "FP16",
-    "tps": 85
+    "tps": 60
   },
   {
     "modelId": "llama3-70b",
