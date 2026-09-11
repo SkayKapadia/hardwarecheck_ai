@@ -20,6 +20,7 @@ import {
   getSafetyMargin,
   getMultiGPUPerCard,
   estimateTPS,
+  formatParams,
 } from "@/lib/calc";
 import { Zap, Layers, ArrowRight, Share2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
 
@@ -106,7 +107,7 @@ export function InferenceScenario() {
             >
               {models.map((m) => (
                 <option key={m.id} value={m.id} className="bg-background text-foreground">
-                  {m.name} ({(m.params / 1e9).toFixed(1)}B, {m.architecture.toUpperCase()})
+                  {m.name} ({formatParams(m.params)}, {m.architecture.toUpperCase()})
                 </option>
               ))}
             </select>

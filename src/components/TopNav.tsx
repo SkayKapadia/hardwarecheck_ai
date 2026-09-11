@@ -4,10 +4,13 @@ import { useStore, Scenario } from "@/lib/store";
 import { Crosshair, Share2, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function TopNav() {
   const store = useStore();
   const [copied, setCopied] = useState(false);
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
 
   // Sync state to URL without reloading
   useEffect(() => {
@@ -57,21 +60,23 @@ export function TopNav() {
         </Link>
       </div>
       
-      <div className="flex bg-muted p-1 border border-border">
-        {["inference", "finetune", "compare", "cloud"].map((s) => (
-          <button
-            key={s}
-            onClick={() => store.setScenario(s as Scenario)}
-            className={`px-4 py-1.5 text-sm font-sans uppercase tracking-wider transition-colors ${
-              store.scenario === s 
-                ? "bg-primary/20 text-primary border border-primary/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]" 
-                : "text-muted-foreground hover:text-primary/70 border border-transparent"
-            }`}
-          >
-            {s.replace("finetune", "fine tune")}
-          </button>
-        ))}
-      </div>
+      {isHomePage && (
+        <div className="flex bg-muted p-1 border border-border">
+          {["inference", "finetune", "compare", "cloud"].map((s) => (
+            <button
+              key={s}
+              onClick={() => store.setScenario(s as Scenario)}
+              className={`px-4 py-1.5 text-sm font-sans uppercase tracking-wider transition-colors ${
+                store.scenario === s 
+                  ? "bg-primary/20 text-primary border border-primary/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]" 
+                  : "text-muted-foreground hover:text-primary/70 border border-transparent"
+              }`}
+            >
+              {s.replace("finetune", "fine tune")}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <button 

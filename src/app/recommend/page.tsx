@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 import gpus from "@/data/gpus.json";
 import models from "@/data/models.json";
-import { getModelWeights, getKVCache, getQuantMetadata, getActivationMemory, getRuntimeReserve, getSafetyMargin, getMultiGPUPerCard } from "@/lib/calc";
+import { getModelWeights, getKVCache, getQuantMetadata, getActivationMemory, getRuntimeReserve, getSafetyMargin, getMultiGPUPerCard, formatParams } from "@/lib/calc";
 import { Slider } from "@/components/ui/Slider";
 import { Calculator, Cpu, Box, Cloud, DollarSign, CheckCircle2 } from "lucide-react";
 
@@ -207,7 +207,7 @@ export default function RecommendPage() {
                  <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-4">AI Model</h3>
                  <div className="text-2xl font-bold text-foreground mb-1">{recommendation.model.name}</div>
                  <div className="text-secondary font-mono bg-secondary/20 inline-block px-2 py-1 rounded text-sm mb-4">
-                   {(recommendation.model.params / 1e9).toFixed(1)}B Parameters
+                   {formatParams(recommendation.model.params)} Parameters
                  </div>
                  <div className="text-sm text-muted-foreground">
                    Recommended Format: <strong className="text-foreground">{recommendation.quant} Quantization</strong>

@@ -60,6 +60,13 @@ export function getModelWeights(params: number, bitsPerWeight: number): number {
   return (params * bitsPerWeight) / 8 / 1e9; // returns GB
 }
 
+export function formatParams(params: number): string {
+  if (params < 1_000_000_000) {
+    return (params / 1_000_000).toFixed(0) + "M";
+  }
+  return (params / 1_000_000_000).toFixed(1) + "B";
+}
+
 export function getKVCache(
   layers: number,
   hiddenSize: number,

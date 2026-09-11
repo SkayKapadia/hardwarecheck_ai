@@ -97,18 +97,6 @@
     "architecture": "dense"
   },
   {
-    "id": "trl-internal-testing/tiny-Qwen2ForCausalLM-2.5",
-    "name": "tiny Qwen2ForCausalLM 2.5",
-    "params": 2434880,
-    "layers": 2,
-    "hiddenSize": 8,
-    "queryHeads": 4,
-    "kvHeads": 2,
-    "vocabSize": 152064,
-    "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
     "id": "openai-community/gpt2",
     "name": "gpt2",
     "params": 190440960,
@@ -276,12 +264,13 @@
     "kvHeads": 1,
     "vocabSize": 129280,
     "maxContext": 1048576,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 37000000000
   },
   {
     "id": "Qwen/Qwen-72B",
     "name": "Qwen 72B",
-    "params": 120603017216,
+    "params": 72000000000,
     "layers": 80,
     "hiddenSize": 8192,
     "queryHeads": 64,
@@ -492,7 +481,8 @@
     "kvHeads": 4,
     "vocabSize": 151936,
     "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 3000000000
   },
   {
     "id": "Qwen/Qwen3-4B-Base",
@@ -504,18 +494,6 @@
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "trl-internal-testing/tiny-Qwen3ForCausalLM",
-    "name": "tiny Qwen3ForCausalLM",
-    "params": 2432832,
-    "layers": 2,
-    "hiddenSize": 8,
-    "queryHeads": 4,
-    "kvHeads": 2,
-    "vocabSize": 151936,
-    "maxContext": 40960,
     "architecture": "dense"
   },
   {
@@ -564,7 +542,8 @@
     "kvHeads": 1,
     "vocabSize": 129280,
     "maxContext": 1048576,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 37000000000
   },
   {
     "id": "Qwen/Qwen3-Coder-Next-FP8",
@@ -600,7 +579,8 @@
     "kvHeads": 128,
     "vocabSize": 129280,
     "maxContext": 163840,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 37000000000
   },
   {
     "id": "Qwen/Qwen2.5-0.5B",
@@ -624,18 +604,6 @@
     "kvHeads": 8,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-    "name": "TinyLlama 1.1B Chat v1.0",
-    "params": 1019215872,
-    "layers": 22,
-    "hiddenSize": 2048,
-    "queryHeads": 32,
-    "kvHeads": 4,
-    "vocabSize": 32000,
-    "maxContext": 2048,
     "architecture": "dense"
   },
   {
@@ -720,7 +688,8 @@
     "kvHeads": 2,
     "vocabSize": 131072,
     "maxContext": 1048576,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 3000000000
   },
   {
     "id": "MiniMaxAI/MiniMax-M2.7",
@@ -745,7 +714,8 @@
     "kvHeads": 2,
     "vocabSize": 131072,
     "maxContext": 262144,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 12000000000
   },
   {
     "id": "ibm-research/PowerMoE-3b",
@@ -759,18 +729,6 @@
     "maxContext": 4096,
     "architecture": "moe",
     "activeParams": 905969664
-  },
-  {
-    "id": "sshleifer/tiny-gpt2",
-    "name": "tiny gpt2",
-    "params": 201156,
-    "layers": 2,
-    "hiddenSize": 2,
-    "queryHeads": 2,
-    "kvHeads": 2,
-    "vocabSize": 50257,
-    "maxContext": 1024,
-    "architecture": "dense"
   },
   {
     "id": "Qwen/Qwen3-Reranker-0.6B",
@@ -799,7 +757,7 @@
   {
     "id": "openai-community/gpt2-large",
     "name": "gpt2 large",
-    "params": 1072376320,
+    "params": 774000000,
     "layers": 36,
     "hiddenSize": 1280,
     "queryHeads": 20,
@@ -818,7 +776,8 @@
     "kvHeads": 4,
     "vocabSize": 151936,
     "maxContext": 262144,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 3000000000
   },
   {
     "id": "deepseek-ai/DeepSeek-V3",
@@ -830,7 +789,8 @@
     "kvHeads": 128,
     "vocabSize": 129280,
     "maxContext": 163840,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 37000000000
   },
   {
     "id": "allenai/OLMo-2-0425-1B",
@@ -878,19 +838,8 @@
     "kvHeads": 4,
     "vocabSize": 151936,
     "maxContext": 262144,
-    "architecture": "dense"
-  },
-  {
-    "id": "peft-internal-testing/tiny-random-OPTForCausalLM",
-    "name": "tiny random OPTForCausalLM",
-    "params": 1628960,
-    "layers": 5,
-    "hiddenSize": 16,
-    "queryHeads": 4,
-    "kvHeads": 4,
-    "vocabSize": 50265,
-    "maxContext": 100,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 3000000000
   },
   {
     "id": "EleutherAI/pythia-70m-deduped",

@@ -17,7 +17,8 @@ import {
   getRuntimeReserve,
   getSafetyMargin,
   getMultiGPUPerCard,
-  getQLoRAOverhead
+  getQLoRAOverhead,
+  formatParams
 } from "@/lib/calc";
 import { Box, Cpu, Zap, Activity } from "lucide-react";
 
@@ -98,7 +99,7 @@ export function FineTuneScenario() {
             >
               {models.map((m) => (
                 <option key={m.id} value={m.id} className="bg-background text-primary">
-                  {m.name} ({(m.params / 1e9).toFixed(1)}B, {m.architecture.toUpperCase()})
+                  {m.name} ({formatParams(m.params)}, {m.architecture.toUpperCase()})
                 </option>
               ))}
             </select>

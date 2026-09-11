@@ -63,7 +63,7 @@
     "id": "m4max-128",
     "name": "Apple M4 Max (128GB)",
     "vram": 128,
-    "bandwidth": 500,
+    "bandwidth": 546,
     "interconnect": "unified",
     "osReserve": 4.0,
     "price": 4500,
