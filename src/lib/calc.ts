@@ -63,12 +63,15 @@ export function getModelWeights(params: number, bitsPerWeight: number): number {
 export function getKVCache(
   layers: number,
   hiddenSize: number,
+  queryHeads: number,
+  kvHeads: number,
   ctxLen: number,
   batchSize: number,
   kvBits: number = 16 // Assume FP16 cache usually
 ): number {
-  // Formula: 2 (K and V) * layers * hiddenSize * ctxLen * batchSize * kvBits / 8
-  const bytes = 2 * layers * hiddenSize * ctxLen * batchSize * (kvBits / 8);
+  // Formula: 2 (K and V) * layers * (hiddenSize / queryHeads) * kvHeads * ctxLen * batchSize * (kvBits / 8)
+  const headDim = hiddenSize / queryHeads;
+  const bytes = 2 * layers * headDim * kvHeads * ctxLen * batchSize * (kvBits / 8);
   return bytes / 1e9; // returns GB
 }
 
@@ -107,13 +110,13 @@ export function getMultiGPUPerCard(
   gpuCount: number,
   kvCache: number,
   strategy: "tensor_parallel" | "pipeline_parallel" = "tensor_parallel"
-): number {
-  if (gpuCount <= 1) return totalWeights + kvCache;
+): { weightsPerCard: number; kvPerCard: number } {
+  if (gpuCount <= 1) return { weightsPerCard: totalWeights, kvPerCard: kvCache };
   if (strategy === "tensor_parallel") {
-    return (totalWeights + kvCache) / gpuCount;
+    return { weightsPerCard: totalWeights / gpuCount, kvPerCard: kvCache / gpuCount };
   }
-  // pipeline parallel usually splits weights but not cache as much
-  return totalWeights / gpuCount + kvCache;
+  // pipeline parallel usually splits weights but keeps full KV cache active on the processing card
+  return { weightsPerCard: totalWeights / gpuCount, kvPerCard: kvCache };
 }
 
 export function getCPUSplit(

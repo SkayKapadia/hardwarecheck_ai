@@ -66,15 +66,15 @@ export default function RecommendPage() {
     for (const m of candidateModels) {
       // Test if it fits in INT4
       const rawWeights = getModelWeights(m.params, 4.5); // INT4 approx
-      const kvCache = getKVCache(m.layers, m.hiddenSize, 4096, 1, 16);
-      const perCardWeights = getMultiGPUPerCard(rawWeights, bestHardware.gpus.length, kvCache, "tensor_parallel");
+      const kvCache = getKVCache(m.layers, m.hiddenSize, m.queryHeads, m.kvHeads, 4096, 1, 16);
+      const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, bestHardware.gpus.length, kvCache, "tensor_parallel");
       const metadata = getQuantMetadata(m.params, "INT4");
       const activations = getActivationMemory(4096, 1, m.hiddenSize);
       
       const gObj = gpus.find(g => g.id === bestHardware.gpus[0])!;
       const reserve = getRuntimeReserve(gObj);
       
-      const totalUsed = perCardWeights + metadata + activations + reserve;
+      const totalUsed = weightsPerCard + kvPerCard + metadata + activations + reserve;
       const totalWithSafety = totalUsed + getSafetyMargin(totalUsed);
 
       if (totalWithSafety <= gObj.vram) {

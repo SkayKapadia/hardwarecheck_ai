@@ -35,12 +35,14 @@ export function FineTuneScenario() {
   const kvCache = getKVCache(
     selectedModelData.layers,
     selectedModelData.hiddenSize,
+    selectedModelData.queryHeads,
+    selectedModelData.kvHeads,
     store.contextLength,
     store.trainBatchSize,
     16
   );
   
-  const perCardWeights = getMultiGPUPerCard(rawWeights, selectedGPUsData.length, kvCache, "tensor_parallel");
+  const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, selectedGPUsData.length, kvCache, "tensor_parallel");
   let activations = getActivationMemory(store.contextLength, store.trainBatchSize, selectedModelData.hiddenSize);
   
   if (store.gradientCheckpointing) {
@@ -62,7 +64,7 @@ export function FineTuneScenario() {
   const gradients = loraOverhead * 0.3; 
   const optimizerStates = loraOverhead * 0.7; // AdamW
 
-  const totalUsed = perCardWeights + activations + reserve + gradients + optimizerStates;
+  const totalUsed = weightsPerCard + kvPerCard + activations + reserve + gradients + optimizerStates;
   const safety = getSafetyMargin(totalUsed);
   const totalWithSafety = totalUsed + safety;
   
@@ -248,7 +250,8 @@ export function FineTuneScenario() {
               total={availableMemory}
               size={240}
               segments={[
-                { label: "Base Weights", value: perCardWeights, color: "#22d3ee" },
+                { label: "Base Weights", value: weightsPerCard, color: "#22d3ee" },
+                { label: "KV Cache", value: kvPerCard, color: "#10b981" },
                 { label: "Activations", value: activations, color: "#ec4899" },
                 { label: "Gradients", value: gradients, color: "#f59e0b" },
                 { label: "Optimizer", value: optimizerStates, color: "#a855f7" },
@@ -260,7 +263,8 @@ export function FineTuneScenario() {
           {/* List */}
           <div className="flex-1 space-y-3 pt-4">
             {[
-              { label: "Base Weights", val: perCardWeights, color: "bg-primary" },
+              { label: "Base Weights", val: weightsPerCard, color: "bg-primary" },
+              { label: "KV Cache", val: kvPerCard, color: "bg-emerald-500" },
               { label: "Activation Memory", val: activations, color: "bg-pink-500" },
               { label: "Gradient Buffers", val: gradients, color: "bg-secondary" },
               { label: "Optimizer (AdamW)", val: optimizerStates, color: "bg-purple-500" },

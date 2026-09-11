@@ -38,18 +38,20 @@ export function InferenceScenario() {
   const kvCache = getKVCache(
     selectedModelData.layers,
     selectedModelData.hiddenSize,
+    selectedModelData.queryHeads,
+    selectedModelData.kvHeads,
     store.contextLength,
     store.batchSize,
     16
   );
   
   // Math for breakdown
-  const perCardWeights = getMultiGPUPerCard(rawWeights, selectedGPUsData.length, kvCache, "tensor_parallel");
+  const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, selectedGPUsData.length, kvCache, "tensor_parallel");
   const metadata = getQuantMetadata(selectedModelData.params, store.quantization);
   const activations = getActivationMemory(store.contextLength, store.batchSize, selectedModelData.hiddenSize);
   const reserve = selectedGPUsData.length > 0 ? getRuntimeReserve(selectedGPUsData[0]) : 0;
   
-  const totalUsed = perCardWeights + metadata + activations + reserve;
+  const totalUsed = weightsPerCard + kvPerCard + metadata + activations + reserve;
   const safety = getSafetyMargin(totalUsed);
   const totalWithSafety = totalUsed + safety;
   
@@ -384,8 +386,8 @@ export function InferenceScenario() {
           
           <div className="w-full h-12 flex rounded-lg overflow-hidden border border-border">
             {[
-              { val: perCardWeights, color: "bg-indigo-500" },
-              { val: kvCache, color: "bg-emerald-500" },
+              { val: weightsPerCard, color: "bg-indigo-500" },
+              { val: kvPerCard, color: "bg-emerald-500" },
               { val: metadata, color: "bg-amber-500" },
               { val: activations, color: "bg-pink-500" },
               { val: reserve, color: "bg-slate-500" },
@@ -406,8 +408,8 @@ export function InferenceScenario() {
           {/* Legend Cards */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "Model Weights", val: perCardWeights, color: "border-indigo-500" },
-              { label: "KV Cache", val: kvCache, color: "border-emerald-500" },
+              { label: "Model Weights", val: weightsPerCard, color: "border-indigo-500" },
+              { label: "KV Cache", val: kvPerCard, color: "border-emerald-500" },
               { label: "Quantization Metadata", val: metadata, color: "border-amber-500" },
               { label: "Activations", val: activations, color: "border-pink-500" },
               { label: "OS Reserve", val: reserve, color: "border-slate-500" },
