@@ -69,7 +69,7 @@ export default function RecommendPage() {
       const kvCache = getKVCache(m.layers, m.hiddenSize, m.queryHeads, m.kvHeads, 4096, 1, 16);
       const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, bestHardware.gpus.length, kvCache, "tensor_parallel");
       const metadata = getQuantMetadata(m.params, "INT4");
-      const activations = getActivationMemory(4096, 1, m.hiddenSize);
+      const activations = getActivationMemory(4096, 1, m.hiddenSize, m.layers);
       
       const gObj = gpus.find(g => g.id === bestHardware.gpus[0])!;
       const reserve = getRuntimeReserve(gObj);

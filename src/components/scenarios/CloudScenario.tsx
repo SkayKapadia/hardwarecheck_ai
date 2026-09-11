@@ -14,7 +14,7 @@ export function CloudScenario() {
   const bitsPerWeight = getBitsPerWeight(store.quantization);
   const rawWeights = getModelWeights(selectedModelData.params, bitsPerWeight);
   const metadata = getQuantMetadata(selectedModelData.params, store.quantization);
-  const activations = getActivationMemory(store.contextLength, store.batchSize, selectedModelData.hiddenSize);
+  const activations = getActivationMemory(store.contextLength, store.batchSize, selectedModelData.hiddenSize, selectedModelData.layers);
 
   // Filter cloud options to those that can fit the model
   const viableOptions = cloud.filter((c) => {

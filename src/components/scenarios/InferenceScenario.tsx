@@ -49,7 +49,7 @@ export function InferenceScenario() {
   // Math for breakdown
   const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, selectedGPUsData.length, kvCache, "tensor_parallel");
   const metadata = getQuantMetadata(selectedModelData.params, store.quantization);
-  const activations = getActivationMemory(store.contextLength, store.batchSize, selectedModelData.hiddenSize);
+  const activations = getActivationMemory(store.contextLength, store.batchSize, selectedModelData.hiddenSize, selectedModelData.layers);
   const reserve = selectedGPUsData.length > 0 ? getRuntimeReserve(selectedGPUsData[0]) : 0;
   
   const totalUsed = weightsPerCard + kvPerCard + metadata + activations + reserve;
@@ -306,7 +306,7 @@ export function InferenceScenario() {
           </div>
           <div className="text-center border-r border-border">
             <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-1">Runtime</div>
-            <div className="font-semibold text-foreground">Supported • vLLM</div>
+            <div className="font-semibold text-foreground">Supported • {store.quantization.includes("GGUF") ? "llama.cpp" : "vLLM"}</div>
           </div>
           <div className="text-center">
             <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-1">Est. Speed</div>

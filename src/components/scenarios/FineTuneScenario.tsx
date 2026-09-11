@@ -44,7 +44,7 @@ export function FineTuneScenario() {
   );
   
   const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, selectedGPUsData.length, kvCache, "tensor_parallel");
-  let activations = getActivationMemory(store.contextLength, store.trainBatchSize, selectedModelData.hiddenSize);
+  let activations = getActivationMemory(store.contextLength, store.trainBatchSize, selectedModelData.hiddenSize, selectedModelData.layers);
   
   if (store.gradientCheckpointing) {
     activations = activations * 0.2; // significant reduction

@@ -17,7 +17,7 @@ export function CompareScenario() {
   const bitsPerWeight = getBitsPerWeight(store.quantization);
   const rawWeights = getModelWeights(selectedModelData.params, bitsPerWeight);
   const metadata = getQuantMetadata(selectedModelData.params, store.quantization);
-  const activations = getActivationMemory(store.contextLength, store.batchSize, selectedModelData.hiddenSize);
+  const activations = getActivationMemory(store.contextLength, store.batchSize, selectedModelData.hiddenSize, selectedModelData.layers);
 
   return (
     <div className="flex-1 flex flex-col gap-6 h-full overflow-hidden">

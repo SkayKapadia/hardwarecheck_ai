@@ -32,7 +32,7 @@ export interface Benchmark {
 
 export function getQuantMetadata(params: number, format: string): number {
   let overheadPercent = 0.0;
-  if (format === "GGUF Q4_K_M" || format === "AWQ" || format === "EXL2") {
+  if (format === "GGUF Q4_K_M" || format === "AWQ" || format === "EXL2" || format === "INT4" || format === "INT8") {
     overheadPercent = 0.05; // 5% overhead for quantization metadata mapping
   }
   return (params * overheadPercent * 16) / 8 / 1e9; // overhead in GB assuming mapping tables
@@ -85,10 +85,17 @@ export function getKVCache(
 export function getActivationMemory(
   ctxLen: number,
   batchSize: number,
-  hiddenSize: number
+  hiddenSize: number,
+  layers: number = 32
 ): number {
-  // Rough estimation for activation workspace during inference
-  const bytes = ctxLen * batchSize * hiddenSize * 2;
+  // Calculate for worst-case Prefill phase spike (processing the entire prompt at once)
+  // Forward pass requires saving activations for backprop (if training) or intermediate tensors (if inference).
+  // A rough estimate for inference prefill activation memory spike:
+  // bytes = batchSize * ctxLen * hiddenSize * layers * (multiplier based on architecture)
+  // For Llama 3 8B at 4k context, we want this to scale to roughly 1.5 GB.
+  // 1 * 4096 * 4096 * 32 = 536,870,912 bytes. 
+  // Multiplier of 3 gives ~1.6 GB.
+  const bytes = batchSize * ctxLen * hiddenSize * layers * 3;
   return bytes / 1e9;
 }
 
