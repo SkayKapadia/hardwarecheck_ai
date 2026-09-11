@@ -1,0 +1,74 @@
+[
+  {
+    "modelId": "llama3-8b",
+    "gpuId": "rtx4090",
+    "quant": "FP16",
+    "tps": 120
+  },
+  {
+    "modelId": "llama3-8b",
+    "gpuId": "rtx4090",
+    "quant": "INT8",
+    "tps": 180
+  },
+  {
+    "modelId": "llama3-8b",
+    "gpuId": "rtx4090",
+    "quant": "INT4",
+    "tps": 220
+  },
+  {
+    "modelId": "llama3-8b",
+    "gpuId": "rtx3090",
+    "quant": "FP16",
+    "tps": 85
+  },
+  {
+    "modelId": "llama3-70b",
+    "gpuId": "rtx4090",
+    "quant": "INT4",
+    "tps": 40
+  },
+  {
+    "modelId": "llama3-70b",
+    "gpuId": "a100-80gb",
+    "quant": "FP16",
+    "tps": 30
+  },
+  {
+    "modelId": "llama3-70b",
+    "gpuId": "h100-80gb",
+    "quant": "FP16",
+    "tps": 65
+  },
+  {
+    "modelId": "mistral-7b",
+    "gpuId": "m3max-128",
+    "quant": "GGUF Q4_K_M",
+    "tps": 60
+  },
+  {
+    "modelId": "mixtral-8x7b",
+    "gpuId": "rtx4090",
+    "quant": "INT4",
+    "tps": 80
+  },
+  {
+    "modelId": "qwen2-72b",
+    "gpuId": "h100-80gb",
+    "quant": "FP16",
+    "tps": 60
+  },
+  {
+    "modelId": "phi3-medium",
+    "gpuId": "rtx3060",
+    "quant": "INT4",
+    "tps": 35
+  },
+  {
+    "modelId": "gemma2-9b",
+    "gpuId": "rtx4090",
+    "quant": "FP16",
+    "tps": 110
+  }
+]

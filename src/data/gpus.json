@@ -1,0 +1,58 @@
+[
+  {
+    "id": "rtx4090",
+    "name": "RTX 4090",
+    "vram": 24,
+    "bandwidth": 1008,
+    "interconnect": "pcie4",
+    "osReserve": 1.5
+  },
+  {
+    "id": "rtx3090",
+    "name": "RTX 3090",
+    "vram": 24,
+    "bandwidth": 936,
+    "interconnect": "pcie4",
+    "osReserve": 1.5
+  },
+  {
+    "id": "rtx3060",
+    "name": "RTX 3060",
+    "vram": 12,
+    "bandwidth": 360,
+    "interconnect": "pcie4",
+    "osReserve": 1.0
+  },
+  {
+    "id": "a100-80gb",
+    "name": "A100 80GB",
+    "vram": 80,
+    "bandwidth": 2039,
+    "interconnect": "nvlink",
+    "osReserve": 0.5
+  },
+  {
+    "id": "h100-80gb",
+    "name": "H100 80GB",
+    "vram": 80,
+    "bandwidth": 3350,
+    "interconnect": "nvlink",
+    "osReserve": 0.5
+  },
+  {
+    "id": "m3max-128",
+    "name": "Apple M3 Max",
+    "vram": 128,
+    "bandwidth": 400,
+    "interconnect": "unified",
+    "osReserve": 4.0
+  },
+  {
+    "id": "m4max-128",
+    "name": "Apple M4 Max",
+    "vram": 128,
+    "bandwidth": 500,
+    "interconnect": "unified",
+    "osReserve": 4.0
+  }
+]

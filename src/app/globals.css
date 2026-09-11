@@ -2,26 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 40 33% 95%; /* Lighter Ivory */
+    --foreground: 20 14% 15%; /* Very dark, warm brown/black for perfect contrast */
+
+    --card: 0 0% 100%; /* Pure white cards */
+    --card-foreground: 20 14% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 15%;
+
+    --primary: 221.2 83.2% 53.3%; /* Bright Blue */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 40 20% 85%; /* Distinctly darker track for sliders */
+    --muted-foreground: 20 10% 40%; /* Legible dark tone for icons */
+
+    --accent: 40 20% 85%;
+    --accent-foreground: 20 14% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 40 20% 80%; /* Visible borders against the ivory background */
+    --input: 40 20% 80%;
+    --ring: 221.2 83.2% 53.3%;
+
+    --radius: 0.5rem;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary selection:text-background;
+    background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 50%);
+    min-height: 100vh;
   }
 }
