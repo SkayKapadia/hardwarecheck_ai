@@ -1,4 +1,4 @@
-# Hardware Compatibility AI (Loadout)
+# Hardware Check AI
 
 An advanced hardware planner, calculator, and visualization tool for open-weight AI models. Instantly check whether models fit comfortably on your local hardware array, analyze exact VRAM requirements (Weights, KV Cache, Metadata, Activations), and estimate generation speeds.
 

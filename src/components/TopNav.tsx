@@ -46,7 +46,7 @@ export function TopNav() {
       <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-3 text-primary font-mono font-bold text-xl tracking-widest uppercase hover:text-primary/80 transition-colors">
           <Crosshair className="w-6 h-6 text-secondary" />
-          Loadout
+          Hardware Check AI
         </Link>
         <div className="h-5 w-px bg-border"></div>
         <Link href="/recommend" className="text-sm font-mono uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">

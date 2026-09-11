@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
 export const metadata: Metadata = {
-  title: "Loadout | AI Hardware Planner",
+  title: "Hardware Check AI | AI Hardware Planner",
   description: "Scenario-based planning dashboard for AI hardware requirements.",
 };
 
