@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
-import { TopNav } from "@/components/TopNav";
 import { InferenceScenario } from "@/components/scenarios/InferenceScenario";
 import { FineTuneScenario } from "@/components/scenarios/FineTuneScenario";
 import { CompareScenario } from "@/components/scenarios/CompareScenario";
@@ -25,15 +24,11 @@ export default function Home() {
   if (!mounted) return null; // Avoid SSR hydration mismatch
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <TopNav />
-      
-      <main className="flex-1 p-6 flex flex-col overflow-hidden">
-        {store.scenario === "inference" && <InferenceScenario />}
-        {store.scenario === "finetune" && <FineTuneScenario />}
-        {store.scenario === "compare" && <CompareScenario />}
-        {store.scenario === "cloud" && <CloudScenario />}
-      </main>
+    <div className="flex-1 p-6 flex flex-col overflow-hidden">
+      {store.scenario === "inference" && <InferenceScenario />}
+      {store.scenario === "finetune" && <FineTuneScenario />}
+      {store.scenario === "compare" && <CompareScenario />}
+      {store.scenario === "cloud" && <CloudScenario />}
     </div>
   );
 }

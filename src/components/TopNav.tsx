@@ -3,6 +3,7 @@
 import { useStore, Scenario } from "@/lib/store";
 import { Crosshair, Share2, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export function TopNav() {
   const store = useStore();
@@ -42,9 +43,18 @@ export function TopNav() {
 
   return (
     <div className="flex items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-6 py-4 sticky top-0 z-50">
-      <div className="flex items-center gap-3 text-primary font-mono font-bold text-xl tracking-widest uppercase">
-        <Crosshair className="w-6 h-6 text-secondary" />
-        Loadout
+      <div className="flex items-center gap-6">
+        <Link href="/" className="flex items-center gap-3 text-primary font-mono font-bold text-xl tracking-widest uppercase hover:text-primary/80 transition-colors">
+          <Crosshair className="w-6 h-6 text-secondary" />
+          Loadout
+        </Link>
+        <div className="h-5 w-px bg-border"></div>
+        <Link href="/recommend" className="text-sm font-mono uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+          Recommend
+        </Link>
+        <Link href="/terminology" className="text-sm font-mono uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+          Terminology
+        </Link>
       </div>
       
       <div className="flex bg-muted p-1 border border-border">

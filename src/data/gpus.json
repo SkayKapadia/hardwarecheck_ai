@@ -5,7 +5,9 @@
     "vram": 24,
     "bandwidth": 1008,
     "interconnect": "pcie4",
-    "osReserve": 1.5
+    "osReserve": 1.5,
+    "price": 1600,
+    "class": "consumer"
   },
   {
     "id": "rtx3090",
@@ -13,7 +15,9 @@
     "vram": 24,
     "bandwidth": 936,
     "interconnect": "pcie4",
-    "osReserve": 1.5
+    "osReserve": 1.5,
+    "price": 700,
+    "class": "consumer"
   },
   {
     "id": "rtx3060",
@@ -21,7 +25,9 @@
     "vram": 12,
     "bandwidth": 360,
     "interconnect": "pcie4",
-    "osReserve": 1.0
+    "osReserve": 1.0,
+    "price": 280,
+    "class": "consumer"
   },
   {
     "id": "a100-80gb",
@@ -29,7 +35,9 @@
     "vram": 80,
     "bandwidth": 2039,
     "interconnect": "nvlink",
-    "osReserve": 0.5
+    "osReserve": 0.5,
+    "price": 15000,
+    "class": "datacenter"
   },
   {
     "id": "h100-80gb",
@@ -37,22 +45,28 @@
     "vram": 80,
     "bandwidth": 3350,
     "interconnect": "nvlink",
-    "osReserve": 0.5
+    "osReserve": 0.5,
+    "price": 30000,
+    "class": "datacenter"
   },
   {
     "id": "m3max-128",
-    "name": "Apple M3 Max",
+    "name": "Apple M3 Max (128GB)",
     "vram": 128,
     "bandwidth": 400,
     "interconnect": "unified",
-    "osReserve": 4.0
+    "osReserve": 4.0,
+    "price": 4000,
+    "class": "mac"
   },
   {
     "id": "m4max-128",
-    "name": "Apple M4 Max",
+    "name": "Apple M4 Max (128GB)",
     "vram": 128,
     "bandwidth": 500,
     "interconnect": "unified",
-    "osReserve": 4.0
+    "osReserve": 4.0,
+    "price": 4500,
+    "class": "mac"
   }
 ]

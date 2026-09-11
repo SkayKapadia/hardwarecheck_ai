@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useState } from "react";
@@ -20,7 +21,7 @@ import {
   getMultiGPUPerCard,
   estimateTPS,
 } from "@/lib/calc";
-import { Cpu, Database, Box, Zap, Shield, Layers, ArrowRight, Share2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
+import { Zap, Layers, ArrowRight, Share2, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
 
 const BASIC_QUANTS = ["FP16", "INT8", "INT4"];
 const ADVANCED_QUANTS = ["GGUF Q4_K_M", "AWQ", "EXL2"];
