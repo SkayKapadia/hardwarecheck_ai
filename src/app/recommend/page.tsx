@@ -8,7 +8,7 @@ import { getModelWeights, getKVCache, getQuantMetadata, getActivationMemory, get
 import { Slider } from "@/components/ui/Slider";
 import { Calculator, Cpu, Box, Cloud, DollarSign, CheckCircle2 } from "lucide-react";
 
-type UseCase = "coding" | "roleplay" | "research" | "production";
+type UseCase = "coding" | "roleplay" | "research" | "production" | "rag" | "edge" | "agents";
 
 // Pre-defined reasonable GPU combinations prioritizing VRAM/$
 const GPU_COMBOS = [
@@ -46,6 +46,15 @@ export default function RecommendPage() {
       candidateModels = models.filter(m => m.name.toLowerCase().includes("coder") || m.name.toLowerCase().includes("llama 3") || m.name.toLowerCase().includes("qwen"));
     } else if (useCase === "roleplay") {
       candidateModels = models.filter(m => m.name.toLowerCase().includes("llama") || m.name.toLowerCase().includes("mistral"));
+    } else if (useCase === "rag") {
+      // Prioritize models known for long context or instruction following
+      candidateModels = models.filter(m => m.maxContext >= 8192);
+    } else if (useCase === "edge") {
+      // Restrict to very small models under 9B parameters for edge devices
+      candidateModels = models.filter(m => m.params <= 9000000000);
+    } else if (useCase === "agents") {
+      // Prioritize high intelligence / function calling capable models
+      candidateModels = models.filter(m => m.params >= 30000000000);
     }
 
     // Sort by parameter count descending to find the biggest/smartest model
@@ -111,7 +120,9 @@ export default function RecommendPage() {
             {[
               { id: "coding", label: "Coding Assistant" },
               { id: "roleplay", label: "Creative & Roleplay" },
-              { id: "research", label: "Math & Research" },
+              { id: "rag", label: "Document Analysis (RAG)" },
+              { id: "agents", label: "Autonomous Agents" },
+              { id: "edge", label: "Edge / Lightweight" },
               { id: "production", label: "Production API" }
             ].map((uc) => (
               <button
