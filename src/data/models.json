@@ -181,19 +181,6 @@
     "architecture": "dense"
   },
   {
-    "id": "openai/gpt-oss-20b",
-    "name": "gpt oss 20b",
-    "params": 20542279680,
-    "layers": 24,
-    "hiddenSize": 2880,
-    "queryHeads": 64,
-    "kvHeads": 8,
-    "vocabSize": 201088,
-    "maxContext": 131072,
-    "architecture": "moe",
-    "activeParams": 3820769280
-  },
-  {
     "id": "Qwen/Qwen3-4B",
     "name": "Qwen3 4B",
     "params": 3880386560,
@@ -204,19 +191,6 @@
     "vocabSize": 151936,
     "maxContext": 40960,
     "architecture": "dense"
-  },
-  {
-    "id": "openai/gpt-oss-120b",
-    "name": "gpt oss 120b",
-    "params": 116230625280,
-    "layers": 36,
-    "hiddenSize": 2880,
-    "queryHeads": 64,
-    "kvHeads": 8,
-    "vocabSize": 201088,
-    "maxContext": 131072,
-    "architecture": "moe",
-    "activeParams": 5152020480
   },
   {
     "id": "Qwen/Qwen2.5-3B-Instruct",
@@ -253,19 +227,6 @@
     "vocabSize": 64000,
     "maxContext": 8192,
     "architecture": "dense"
-  },
-  {
-    "id": "deepseek-ai/DeepSeek-V4-Flash-0731",
-    "name": "DeepSeek V4 Flash 0731",
-    "params": 10471342080,
-    "layers": 43,
-    "hiddenSize": 4096,
-    "queryHeads": 64,
-    "kvHeads": 1,
-    "vocabSize": 129280,
-    "maxContext": 1048576,
-    "architecture": "moe",
-    "activeParams": 37000000000
   },
   {
     "id": "Qwen/Qwen-72B",

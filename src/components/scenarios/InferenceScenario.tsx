@@ -336,26 +336,26 @@ export function InferenceScenario() {
 
             <div className="flex items-center justify-between text-xs font-mono relative">
               <div className="flex flex-col items-center bg-card border border-border p-3 rounded-lg w-28 shrink-0 relative z-10">
-                <span className="font-bold text-foreground mb-1">TOKENS</span>
-                <span className="text-[10px] text-muted-foreground">B × T</span>
+                <div className="font-bold text-foreground mb-1">TOKENS</div>
+                <div className="text-[10px] text-muted-foreground">B × T</div>
               </div>
               
               <ArrowRight className="text-muted-foreground/50 shrink-0 mx-2" />
               
               <div className="flex flex-col items-center bg-card border border-primary/40 p-3 rounded-lg w-32 shrink-0 relative z-10 shadow-[0_0_15px_rgba(var(--primary),0.1)]">
-                <span className="font-bold text-primary mb-1 text-[10px]">EMBEDDING</span>
-                <span className="text-[9px] text-muted-foreground text-center leading-tight mt-1">
+                <div className="font-bold text-primary mb-1 text-[10px]">EMBEDDING</div>
+                <div className="text-[9px] text-muted-foreground text-center leading-tight mt-1">
                   Vocab × Hidden<br/>{selectedModelData.vocabSize} × {selectedModelData.hiddenSize}
-                </span>
+                </div>
               </div>
 
               <ArrowRight className="text-muted-foreground/50 shrink-0 mx-2" />
 
               <div className="flex flex-col items-center justify-center bg-card border border-dashed border-primary p-4 rounded-xl flex-1 relative z-10 min-h-[80px]">
-                <span className="font-bold text-primary mb-1 text-[10px]">REPEATED BLOCK</span>
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-2">
+                <div className="font-bold text-primary mb-1 text-[10px]">REPEATED BLOCK</div>
+                <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-2">
                   + EXPAND DETAILS
-                </span>
+                </div>
                 <div className="absolute top-2 right-2 bg-primary/20 text-primary text-[10px] px-1.5 rounded">
                   x{selectedModelData.layers}
                 </div>
@@ -365,10 +365,10 @@ export function InferenceScenario() {
 
               <div className="flex flex-col gap-2 shrink-0 relative z-10">
                 <div className="bg-card border border-border p-2 rounded-lg w-28 text-center">
-                  <span className="font-bold text-foreground text-[10px]">FINAL NORM</span>
+                  <div className="font-bold text-foreground text-[10px]">FINAL NORM</div>
                 </div>
                 <div className="bg-card border border-border p-2 rounded-lg w-28 text-center">
-                  <span className="font-bold text-foreground text-[10px]">LM HEAD</span>
+                  <div className="font-bold text-foreground text-[10px]">LM HEAD</div>
                   <div className="text-[8px] text-muted-foreground leading-tight mt-1">
                     Vocab × Hidden<br/>{selectedModelData.vocabSize} × {selectedModelData.hiddenSize}
                   </div>
