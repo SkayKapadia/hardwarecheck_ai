@@ -9,7 +9,10 @@
     "kvHeads": 8,
     "vocabSize": 128256,
     "maxContext": 8192,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Llama",
+    "source": "meta-llama/Meta-Llama-3-8B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "llama3-70b",
@@ -21,19 +24,25 @@
     "kvHeads": 8,
     "vocabSize": 128256,
     "maxContext": 8192,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Llama",
+    "source": "meta-llama/Meta-Llama-3-70B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "mistral-7b",
     "name": "Mistral 7B",
-    "params": 7200000000,
+    "params": 7241732096,
     "layers": 32,
     "hiddenSize": 4096,
     "queryHeads": 32,
     "kvHeads": 8,
     "vocabSize": 32000,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Mistral",
+    "source": "mistralai/Mistral-7B-v0.1",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "mixtral-8x7b",
@@ -46,7 +55,10 @@
     "vocabSize": 32000,
     "maxContext": 32768,
     "architecture": "moe",
-    "activeParams": 12900000000
+    "activeParams": 12900000000,
+    "family": "Mistral",
+    "source": "mistralai/Mixtral-8x7B-v0.1",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "qwen2-72b",
@@ -58,7 +70,10 @@
     "kvHeads": 8,
     "vocabSize": 152064,
     "maxContext": 131072,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2-72B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "phi3-medium",
@@ -70,7 +85,10 @@
     "kvHeads": 10,
     "vocabSize": 32064,
     "maxContext": 128000,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Phi",
+    "source": "microsoft/Phi-3-medium-128k-instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "gemma2-9b",
@@ -82,151 +100,175 @@
     "kvHeads": 8,
     "vocabSize": 256000,
     "maxContext": 8192,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Gemma",
+    "source": "google/gemma-2-9b",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-0.6B",
     "name": "Qwen3 0.6B",
-    "params": 648806400,
+    "params": 596049920,
     "layers": 28,
     "hiddenSize": 1024,
     "queryHeads": 16,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-0.6B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "openai-community/gpt2",
     "name": "gpt2",
-    "params": 190440960,
+    "params": 124439808,
     "layers": 12,
     "hiddenSize": 768,
     "queryHeads": 12,
     "kvHeads": 12,
     "vocabSize": 50257,
     "maxContext": 1024,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "GPT-2",
+    "source": "openai-community/gpt2",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-8B",
     "name": "Qwen3 8B",
-    "params": 7737442304,
+    "params": 8190735360,
     "layers": 36,
     "hiddenSize": 4096,
     "queryHeads": 32,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-8B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-7B-Instruct",
     "name": "Qwen2.5 7B Instruct",
-    "params": 7307001856,
+    "params": 7615616512,
     "layers": 28,
     "hiddenSize": 3584,
     "queryHeads": 28,
     "kvHeads": 4,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-7B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "facebook/opt-125m",
     "name": "opt 125m",
-    "params": 190464000,
+    "params": 125238272,
     "layers": 12,
     "hiddenSize": 768,
     "queryHeads": 12,
     "kvHeads": 12,
     "vocabSize": 50272,
     "maxContext": 2048,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen3-Embedding-0.6B",
-    "name": "Qwen3 Embedding 0.6B",
-    "params": 648259584,
-    "layers": 28,
-    "hiddenSize": 1024,
-    "queryHeads": 16,
-    "kvHeads": 8,
-    "vocabSize": 151669,
-    "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "OPT",
+    "source": "facebook/opt-125m",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-1.5B-Instruct",
     "name": "Qwen2.5 1.5B Instruct",
-    "params": 1721892864,
+    "params": 1543733572,
     "layers": 28,
     "hiddenSize": 1536,
     "queryHeads": 12,
     "kvHeads": 2,
     "vocabSize": 151936,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-1.5B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-0.5B-Instruct",
     "name": "Qwen2.5 0.5B Instruct",
-    "params": 613580800,
+    "params": 494048912,
     "layers": 24,
     "hiddenSize": 896,
     "queryHeads": 14,
     "kvHeads": 2,
     "vocabSize": 151936,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-0.5B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-4B",
     "name": "Qwen3 4B",
-    "params": 3880386560,
+    "params": 4022468096,
     "layers": 36,
     "hiddenSize": 2560,
     "queryHeads": 32,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-4B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-3B-Instruct",
     "name": "Qwen2.5 3B Instruct",
-    "params": 3264741376,
+    "params": 3085938688,
     "layers": 36,
     "hiddenSize": 2048,
     "queryHeads": 16,
     "kvHeads": 2,
     "vocabSize": 151936,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-3B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-32B",
     "name": "Qwen3 32B",
-    "params": 29028515840,
+    "params": 32762123264,
     "layers": 64,
     "hiddenSize": 5120,
     "queryHeads": 64,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-32B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "dphn/dolphin-2.9.1-yi-1.5-34b",
     "name": "dolphin 2.9.1 yi 1.5 34b",
-    "params": 31745638400,
+    "params": 34388917248,
     "layers": 60,
     "hiddenSize": 7168,
     "queryHeads": 56,
     "kvHeads": 8,
     "vocabSize": 64000,
     "maxContext": 8192,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Yi",
+    "source": "dphn/dolphin-2.9.1-yi-1.5-34b",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen-72B",
@@ -238,204 +280,135 @@
     "kvHeads": 64,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen2.5-7B-Instruct-AWQ",
-    "name": "Qwen2.5 7B Instruct AWQ",
-    "params": 7307001856,
-    "layers": 28,
-    "hiddenSize": 3584,
-    "queryHeads": 28,
-    "kvHeads": 4,
-    "vocabSize": 152064,
-    "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen-72B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-4B-Instruct-2507",
     "name": "Qwen3 4B Instruct 2507",
-    "params": 3880386560,
+    "params": 4022795776,
     "layers": 36,
     "hiddenSize": 2560,
     "queryHeads": 32,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 262144,
-    "architecture": "dense"
-  },
-  {
-    "id": "nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16",
-    "name": "NVIDIA Nemotron 3 Nano 4B BF16",
-    "params": 6439547699,
-    "layers": 42,
-    "hiddenSize": 3136,
-    "queryHeads": 40,
-    "kvHeads": 8,
-    "vocabSize": 131072,
-    "maxContext": 262144,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-4B-Instruct-2507",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-1.7B",
     "name": "Qwen3 1.7B",
-    "params": 1972895744,
+    "params": 1720000000,
     "layers": 28,
     "hiddenSize": 2048,
     "queryHeads": 16,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-1.7B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "EleutherAI/pythia-160m",
     "name": "pythia 160m",
-    "params": 190513152,
+    "params": 162322944,
     "layers": 12,
     "hiddenSize": 768,
     "queryHeads": 12,
     "kvHeads": 12,
     "vocabSize": 50304,
     "maxContext": 2048,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Pythia",
+    "source": "EleutherAI/pythia-160m",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "name": "Qwen2.5 Coder 7B Instruct",
-    "params": 7307001856,
+    "params": 7615616512,
     "layers": 28,
     "hiddenSize": 3584,
     "queryHeads": 28,
     "kvHeads": 4,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "RadixArk/Kimi-K3-DSpark",
-    "name": "Kimi K3 DSpark",
-    "params": 4339793920,
-    "layers": 5,
-    "hiddenSize": 7168,
-    "queryHeads": 64,
-    "kvHeads": 16,
-    "vocabSize": 163840,
-    "maxContext": 1048576,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-14B-Instruct",
     "name": "Qwen2.5 14B Instruct",
-    "params": 13762560000,
+    "params": 14770033664,
     "layers": 48,
     "hiddenSize": 5120,
     "queryHeads": 40,
     "kvHeads": 8,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen3-Reranker-4B",
-    "name": "Qwen3 Reranker 4B",
-    "params": 3879019520,
-    "layers": 36,
-    "hiddenSize": 2560,
-    "queryHeads": 32,
-    "kvHeads": 8,
-    "vocabSize": 151669,
-    "maxContext": 40960,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen3-Embedding-4B",
-    "name": "Qwen3 Embedding 4B",
-    "params": 3878999040,
-    "layers": 36,
-    "hiddenSize": 2560,
-    "queryHeads": 32,
-    "kvHeads": 8,
-    "vocabSize": 151665,
-    "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-14B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "HuggingFaceTB/SmolLM2-135M",
     "name": "SmolLM2 135M",
-    "params": 156155904,
+    "params": 134530276,
     "layers": 30,
     "hiddenSize": 576,
     "queryHeads": 9,
     "kvHeads": 3,
     "vocabSize": 49152,
     "maxContext": 8192,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen3-14B-AWQ",
-    "name": "Qwen3 14B AWQ",
-    "params": 13929021440,
-    "layers": 40,
-    "hiddenSize": 5120,
-    "queryHeads": 40,
-    "kvHeads": 8,
-    "vocabSize": 151936,
-    "maxContext": 40960,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen3-Embedding-8B",
-    "name": "Qwen3 Embedding 8B",
-    "params": 7735222272,
-    "layers": 36,
-    "hiddenSize": 4096,
-    "queryHeads": 32,
-    "kvHeads": 8,
-    "vocabSize": 151665,
-    "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "SmolLM",
+    "source": "HuggingFaceTB/SmolLM2-135M",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-32B-Instruct",
     "name": "Qwen2.5 32B Instruct",
-    "params": 31420579840,
+    "params": 32763876352,
     "layers": 64,
     "hiddenSize": 5120,
     "queryHeads": 40,
     "kvHeads": 8,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen2.5-14B-Instruct-AWQ",
-    "name": "Qwen2.5 14B Instruct AWQ",
-    "params": 13762560000,
-    "layers": 48,
-    "hiddenSize": 5120,
-    "queryHeads": 40,
-    "kvHeads": 8,
-    "vocabSize": 152064,
-    "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-32B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "distilbert/distilgpt2",
     "name": "distilgpt2",
-    "params": 133817856,
+    "params": 81911808,
     "layers": 6,
     "hiddenSize": 768,
     "queryHeads": 12,
     "kvHeads": 12,
     "vocabSize": 50257,
     "maxContext": 1024,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "GPT-2",
+    "source": "distilbert/distilgpt2",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-30B-A3B",
     "name": "Qwen3 30B A3B",
-    "params": 2711093248,
+    "params": 30532122624,
     "layers": 48,
     "hiddenSize": 2048,
     "queryHeads": 32,
@@ -443,97 +416,123 @@
     "vocabSize": 151936,
     "maxContext": 40960,
     "architecture": "moe",
-    "activeParams": 3000000000
+    "activeParams": 3300000000,
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-30B-A3B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-4B-Base",
     "name": "Qwen3 4B Base",
-    "params": 3880386560,
+    "params": 4022795776,
     "layers": 36,
     "hiddenSize": 2560,
     "queryHeads": 32,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-4B-Base",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "zai-org/GLM-4.7-Flash",
     "name": "GLM 4.7 Flash",
-    "params": 4379901952,
+    "params": 30000000000,
     "layers": 47,
     "hiddenSize": 2048,
     "queryHeads": 20,
     "kvHeads": 20,
     "vocabSize": 154880,
     "maxContext": 202752,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 3000000000,
+    "family": "GLM",
+    "source": "zai-org/GLM-4.7-Flash",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-1.7B-Base",
     "name": "Qwen3 1.7B Base",
-    "params": 1972895744,
+    "params": 1720000000,
     "layers": 28,
     "hiddenSize": 2048,
     "queryHeads": 16,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-1.7B-Base",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-Coder-14B-Instruct",
     "name": "Qwen2.5 Coder 14B Instruct",
-    "params": 13762560000,
+    "params": 14770033664,
     "layers": 48,
     "hiddenSize": 5120,
     "queryHeads": 40,
     "kvHeads": 8,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-Coder-14B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
-    "id": "deepseek-ai/DeepSeek-V4-Flash",
-    "name": "DeepSeek V4 Flash",
-    "params": 10471342080,
-    "layers": 43,
-    "hiddenSize": 4096,
+    "id": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "name": "DeepSeek V4.1-Flash",
+    "params": 552000000000,
+    "layers": 40,
+    "hiddenSize": 5120,
     "queryHeads": 64,
     "kvHeads": 1,
     "vocabSize": 129280,
     "maxContext": 1048576,
     "architecture": "moe",
-    "activeParams": 37000000000
+    "activeParams": 14000000000,
+    "family": "DeepSeek",
+    "source": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-Coder-Next-FP8",
     "name": "Qwen3 Coder Next FP8",
-    "params": 2409103360,
+    "params": 80000000000,
     "layers": 48,
     "hiddenSize": 2048,
     "queryHeads": 16,
     "kvHeads": 2,
     "vocabSize": 151936,
     "maxContext": 262144,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 3000000000,
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-Coder-Next-FP8",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-14B",
     "name": "Qwen3 14B",
-    "params": 13929021440,
+    "params": 14768307200,
     "layers": 40,
     "hiddenSize": 5120,
     "queryHeads": 40,
     "kvHeads": 8,
     "vocabSize": 151936,
     "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-14B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "deepseek-ai/DeepSeek-V3.2",
     "name": "DeepSeek V3.2",
-    "params": 38568198144,
+    "params": 671000000000,
     "layers": 61,
     "hiddenSize": 7168,
     "queryHeads": 128,
@@ -541,108 +540,91 @@
     "vocabSize": 129280,
     "maxContext": 163840,
     "architecture": "moe",
-    "activeParams": 37000000000
+    "activeParams": 37000000000,
+    "family": "DeepSeek",
+    "source": "deepseek-ai/DeepSeek-V3.2",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-0.5B",
     "name": "Qwen2.5 0.5B",
-    "params": 613580800,
+    "params": 494048912,
     "layers": 24,
     "hiddenSize": 896,
     "queryHeads": 14,
     "kvHeads": 2,
     "vocabSize": 151936,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen2.5-Coder-14B-Instruct-AWQ",
-    "name": "Qwen2.5 Coder 14B Instruct AWQ",
-    "params": 13762560000,
-    "layers": 48,
-    "hiddenSize": 5120,
-    "queryHeads": 40,
-    "kvHeads": 8,
-    "vocabSize": 152064,
-    "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen3-8B-AWQ",
-    "name": "Qwen3 8B AWQ",
-    "params": 7737442304,
-    "layers": 36,
-    "hiddenSize": 4096,
-    "queryHeads": 32,
-    "kvHeads": 8,
-    "vocabSize": 151936,
-    "maxContext": 40960,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-0.5B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-Coder-32B-Instruct",
     "name": "Qwen2.5 Coder 32B Instruct",
-    "params": 31420579840,
+    "params": 32763876352,
     "layers": 64,
     "hiddenSize": 5120,
     "queryHeads": 40,
     "kvHeads": 8,
     "vocabSize": 152064,
     "maxContext": 32768,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ",
-    "name": "Qwen2.5 Coder 32B Instruct AWQ",
-    "params": 31420579840,
-    "layers": 64,
-    "hiddenSize": 5120,
-    "queryHeads": 40,
-    "kvHeads": 8,
-    "vocabSize": 152064,
-    "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-Coder-32B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "mistralai/Mistral-7B-Instruct-v0.2",
     "name": "Mistral 7B Instruct v0.2",
-    "params": 6838812672,
+    "params": 7241732096,
     "layers": 32,
     "hiddenSize": 4096,
     "queryHeads": 32,
     "kvHeads": 8,
     "vocabSize": 32000,
     "maxContext": 32768,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Mistral",
+    "source": "mistralai/Mistral-7B-Instruct-v0.2",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "HuggingFaceTB/SmolLM2-135M-Instruct",
     "name": "SmolLM2 135M Instruct",
-    "params": 156155904,
+    "params": 134530276,
     "layers": 30,
     "hiddenSize": 576,
     "queryHeads": 9,
     "kvHeads": 3,
     "vocabSize": 49152,
     "maxContext": 8192,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "SmolLM",
+    "source": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "zai-org/GLM-5.2-FP8",
     "name": "GLM 5.2 FP8",
-    "params": 31347179520,
+    "params": 744000000000,
     "layers": 78,
     "hiddenSize": 6144,
     "queryHeads": 64,
     "kvHeads": 64,
     "vocabSize": 154880,
     "maxContext": 1048576,
-    "architecture": "dense"
+    "architecture": "moe",
+    "activeParams": 40000000000,
+    "family": "GLM",
+    "source": "zai-org/GLM-5.2-FP8",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
     "name": "NVIDIA Nemotron 3.5 Lightning 30B A3B NVFP4",
-    "params": 1929080832,
+    "params": 30000000000,
     "layers": 52,
     "hiddenSize": 2688,
     "queryHeads": 32,
@@ -650,7 +632,10 @@
     "vocabSize": 131072,
     "maxContext": 1048576,
     "architecture": "moe",
-    "activeParams": 3000000000
+    "activeParams": 3000000000,
+    "family": "Nemotron",
+    "source": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "MiniMaxAI/MiniMax-M2.7",
@@ -663,12 +648,15 @@
     "vocabSize": 200064,
     "maxContext": 204800,
     "architecture": "moe",
-    "activeParams": 9128116224
+    "activeParams": 9128116224,
+    "family": "MiniMax",
+    "source": "MiniMaxAI/MiniMax-M2.7",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
     "name": "NVIDIA Nemotron 3 Super 120B A12B BF16",
-    "params": 5733613568,
+    "params": 123611054080,
     "layers": 88,
     "hiddenSize": 4096,
     "queryHeads": 32,
@@ -676,12 +664,15 @@
     "vocabSize": 131072,
     "maxContext": 262144,
     "architecture": "moe",
-    "activeParams": 12000000000
+    "activeParams": 12000000000,
+    "family": "Nemotron",
+    "source": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "ibm-research/PowerMoE-3b",
     "name": "PowerMoE 3b",
-    "params": 3321888768,
+    "params": 3374286336,
     "layers": 32,
     "hiddenSize": 1536,
     "queryHeads": 24,
@@ -689,31 +680,10 @@
     "vocabSize": 49152,
     "maxContext": 4096,
     "architecture": "moe",
-    "activeParams": 905969664
-  },
-  {
-    "id": "Qwen/Qwen3-Reranker-0.6B",
-    "name": "Qwen3 Reranker 0.6B",
-    "params": 648259584,
-    "layers": 28,
-    "hiddenSize": 1024,
-    "queryHeads": 16,
-    "kvHeads": 8,
-    "vocabSize": 151669,
-    "maxContext": 40960,
-    "architecture": "dense"
-  },
-  {
-    "id": "Qwen/Qwen3-4B-Instruct-2507-FP8",
-    "name": "Qwen3 4B Instruct 2507 FP8",
-    "params": 3880386560,
-    "layers": 36,
-    "hiddenSize": 2560,
-    "queryHeads": 32,
-    "kvHeads": 8,
-    "vocabSize": 151936,
-    "maxContext": 262144,
-    "architecture": "dense"
+    "activeParams": 905969664,
+    "family": "Other",
+    "source": "ibm-research/PowerMoE-3b",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "openai-community/gpt2-large",
@@ -725,12 +695,15 @@
     "kvHeads": 20,
     "vocabSize": 50257,
     "maxContext": 1024,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "GPT-2",
+    "source": "openai-community/gpt2-large",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8",
     "name": "Qwen3 Coder 30B A3B Instruct FP8",
-    "params": 2711093248,
+    "params": 30532122624,
     "layers": 48,
     "hiddenSize": 2048,
     "queryHeads": 32,
@@ -738,12 +711,15 @@
     "vocabSize": 151936,
     "maxContext": 262144,
     "architecture": "moe",
-    "activeParams": 3000000000
+    "activeParams": 3300000000,
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "deepseek-ai/DeepSeek-V3",
     "name": "DeepSeek V3",
-    "params": 38568198144,
+    "params": 671000000000,
     "layers": 61,
     "hiddenSize": 7168,
     "queryHeads": 128,
@@ -751,48 +727,60 @@
     "vocabSize": 129280,
     "maxContext": 163840,
     "architecture": "moe",
-    "activeParams": 37000000000
+    "activeParams": 37000000000,
+    "family": "DeepSeek",
+    "source": "deepseek-ai/DeepSeek-V3",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "allenai/OLMo-2-0425-1B",
     "name": "OLMo 2 0425 1B",
-    "params": 1484783616,
+    "params": 1484916736,
     "layers": 16,
     "hiddenSize": 2048,
     "queryHeads": 16,
     "kvHeads": 16,
     "vocabSize": 100352,
     "maxContext": 4096,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "OLMo",
+    "source": "allenai/OLMo-2-0425-1B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen2.5-1.5B",
     "name": "Qwen2.5 1.5B",
-    "params": 1721892864,
+    "params": 1543733572,
     "layers": 28,
     "hiddenSize": 1536,
     "queryHeads": 12,
     "kvHeads": 2,
     "vocabSize": 151936,
     "maxContext": 131072,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Qwen",
+    "source": "Qwen/Qwen2.5-1.5B",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "mlx-community/Llama-3.1-8B-Instruct-4bit",
     "name": "Llama 3.1 8B Instruct 4bit",
-    "params": 7627341824,
+    "params": 8030261248,
     "layers": 32,
     "hiddenSize": 4096,
     "queryHeads": 32,
     "kvHeads": 8,
     "vocabSize": 128256,
     "maxContext": 131072,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Llama",
+    "source": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "Qwen/Qwen3-30B-A3B-Instruct-2507",
     "name": "Qwen3 30B A3B Instruct 2507",
-    "params": 2711093248,
+    "params": 30532122624,
     "layers": 48,
     "hiddenSize": 2048,
     "queryHeads": 32,
@@ -800,7 +788,10 @@
     "vocabSize": 151936,
     "maxContext": 262144,
     "architecture": "moe",
-    "activeParams": 3000000000
+    "activeParams": 3300000000,
+    "family": "Qwen",
+    "source": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+    "verifiedOn": "2026-09-15"
   },
   {
     "id": "EleutherAI/pythia-70m-deduped",
@@ -812,6 +803,9 @@
     "kvHeads": 8,
     "vocabSize": 50304,
     "maxContext": 2048,
-    "architecture": "dense"
+    "architecture": "dense",
+    "family": "Pythia",
+    "source": "EleutherAI/pythia-70m-deduped",
+    "verifiedOn": "2026-09-15"
   }
 ]

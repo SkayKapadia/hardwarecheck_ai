@@ -6,7 +6,7 @@
     "bandwidth": 1008,
     "interconnect": "pcie4",
     "osReserve": 1.5,
-    "price": 1600,
+    "price": 2400,
     "class": "consumer"
   },
   {
@@ -16,7 +16,7 @@
     "bandwidth": 936,
     "interconnect": "pcie4",
     "osReserve": 1.5,
-    "price": 700,
+    "price": 850,
     "class": "consumer"
   },
   {
@@ -28,6 +28,66 @@
     "osReserve": 1.0,
     "price": 280,
     "class": "consumer"
+  },
+  {
+    "id": "rtx5090",
+    "name": "RTX 5090",
+    "vram": 32,
+    "bandwidth": 1792,
+    "interconnect": "pcie5",
+    "osReserve": 1.5,
+    "price": 2000,
+    "class": "consumer"
+  },
+  {
+    "id": "rtx5080",
+    "name": "RTX 5080",
+    "vram": 16,
+    "bandwidth": 960,
+    "interconnect": "pcie5",
+    "osReserve": 1.5,
+    "price": 1000,
+    "class": "consumer"
+  },
+  {
+    "id": "rtx5070ti",
+    "name": "RTX 5070 Ti",
+    "vram": 16,
+    "bandwidth": 896,
+    "interconnect": "pcie5",
+    "osReserve": 1.5,
+    "price": 750,
+    "class": "consumer"
+  },
+  {
+    "id": "rx7900xtx",
+    "name": "AMD RX 7900 XTX",
+    "vram": 24,
+    "bandwidth": 960,
+    "interconnect": "pcie4",
+    "osReserve": 1.5,
+    "price": 900,
+    "class": "amd"
+  },
+  {
+    "id": "rtx6000pro-96gb",
+    "name": "RTX 6000 Pro 96GB",
+    "vram": 96,
+    "bandwidth": 1792,
+    "interconnect": "pcie5",
+    "osReserve": 0.5,
+    "price": 8500,
+    "class": "datacenter"
+  },
+  {
+    "id": "l40s-48gb",
+    "name": "L40S 48GB",
+    "vram": 48,
+    "bandwidth": 864,
+    "interconnect": "pcie4",
+    "osReserve": 0.5,
+    "price": 8000,
+    "class": "datacenter"
   },
   {
     "id": "a100-80gb",
@@ -50,6 +110,36 @@
     "class": "datacenter"
   },
   {
+    "id": "h200-141gb",
+    "name": "H200 141GB",
+    "vram": 141,
+    "bandwidth": 4800,
+    "interconnect": "nvlink",
+    "osReserve": 0.5,
+    "price": 35000,
+    "class": "datacenter"
+  },
+  {
+    "id": "b200-192gb",
+    "name": "B200 192GB",
+    "vram": 192,
+    "bandwidth": 8000,
+    "interconnect": "nvlink",
+    "osReserve": 0.5,
+    "price": 45000,
+    "class": "datacenter"
+  },
+  {
+    "id": "mi300x-192gb",
+    "name": "AMD MI300X 192GB",
+    "vram": 192,
+    "bandwidth": 5300,
+    "interconnect": "xgmi",
+    "osReserve": 0.5,
+    "price": 20000,
+    "class": "amd"
+  },
+  {
     "id": "m3max-128",
     "name": "Apple M3 Max (128GB)",
     "vram": 128,
@@ -67,6 +157,26 @@
     "interconnect": "unified",
     "osReserve": 4.0,
     "price": 4500,
+    "class": "mac"
+  },
+  {
+    "id": "m4pro-64",
+    "name": "Apple M4 Pro (64GB)",
+    "vram": 64,
+    "bandwidth": 273,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 2500,
+    "class": "mac"
+  },
+  {
+    "id": "m4ultra-256",
+    "name": "Apple M4 Ultra (256GB)",
+    "vram": 256,
+    "bandwidth": 819,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 8000,
     "class": "mac"
   }
 ]

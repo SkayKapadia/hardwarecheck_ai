@@ -3,63 +3,72 @@
     "provider": "RunPod",
     "gpuId": "rtx4090",
     "vram": 24,
-    "hourlyPrice": 0.74,
-    "availability": "High"
+    "hourlyPrice": 0.69,
+    "liquidity": "typical",
+    "asOf": "2026-09"
   },
   {
     "provider": "RunPod",
     "gpuId": "rtx3090",
     "vram": 24,
     "hourlyPrice": 0.44,
-    "availability": "Medium"
+    "liquidity": "variable",
+    "asOf": "2026-09"
   },
   {
     "provider": "RunPod",
     "gpuId": "a100-80gb",
     "vram": 80,
-    "hourlyPrice": 1.89,
-    "availability": "Low"
+    "hourlyPrice": 1.49,
+    "liquidity": "scarce",
+    "asOf": "2026-09"
   },
   {
     "provider": "RunPod",
     "gpuId": "h100-80gb",
     "vram": 80,
-    "hourlyPrice": 4.69,
-    "availability": "Low"
+    "hourlyPrice": 2.99,
+    "liquidity": "scarce",
+    "asOf": "2026-09"
   },
   {
     "provider": "Vast.ai",
     "gpuId": "rtx4090",
     "vram": 24,
     "hourlyPrice": 0.45,
-    "availability": "High"
+    "liquidity": "typical",
+    "asOf": "2026-09"
   },
   {
     "provider": "Vast.ai",
     "gpuId": "rtx3090",
     "vram": 24,
-    "hourlyPrice": 0.28,
-    "availability": "High"
+    "hourlyPrice": 0.19,
+    "liquidity": "typical",
+    "asOf": "2026-09"
   },
   {
     "provider": "Vast.ai",
     "gpuId": "a100-80gb",
     "vram": 80,
-    "hourlyPrice": 1.50,
-    "availability": "Medium"
+    "hourlyPrice": 0.80,
+    "liquidity": "variable",
+    "asOf": "2026-09"
   },
   {
     "provider": "Lambda Labs",
     "gpuId": "a100-80gb",
     "vram": 80,
     "hourlyPrice": 1.50,
-    "availability": "Low"
+    "liquidity": "scarce",
+    "asOf": "2026-09"
   },
   {
     "provider": "Lambda Labs",
     "gpuId": "h100-80gb",
     "vram": 80,
     "hourlyPrice": 3.19,
-    "availability": "Low"
+    "liquidity": "scarce",
+    "asOf": "2026-09"
   }
 ]
