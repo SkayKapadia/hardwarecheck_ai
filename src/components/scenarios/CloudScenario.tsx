@@ -5,12 +5,13 @@ import cloud from "@/data/cloud.json";
 import gpus from "@/data/gpus.json";
 import models from "@/data/models.json";
 import { Cloud, Server, DollarSign, Clock } from "lucide-react";
-import { getBitsPerWeight, getModelWeights, getQuantMetadata, getActivationMemory, getRuntimeReserve, getSafetyMargin } from "@/lib/calc";
+import { getModelById } from "@/components/ModelPicker";
+import { getBitsPerWeight, getModelWeights, getQuantMetadata, getActivationMemory, getRuntimeReserve, getSafetyMargin, PRICING_DATA_AS_OF, type ModelSpec } from "@/lib/calc";
 
 export function CloudScenario() {
   const store = useStore();
 
-  const selectedModelData = models.find((m) => m.id === store.selectedModel)!;
+  const selectedModelData = (getModelById(store.selectedModel) ?? models[0]) as ModelSpec;
   const bitsPerWeight = getBitsPerWeight(store.quantization);
   const rawWeights = getModelWeights(selectedModelData.params, bitsPerWeight);
   const metadata = getQuantMetadata(selectedModelData.params, store.quantization);
@@ -47,15 +48,14 @@ export function CloudScenario() {
         ) : (
           viableOptions.map((option, i) => {
             const gpu = gpus.find((g) => g.id === option.gpuId);
-            const monthlyCost = option.hourlyPrice * 24 * 30;
-            // Fake buy price for demo
-            const estBuyPrice = gpu?.vram === 80 ? 15000 : (gpu?.vram === 24 ? 1500 : 800);
-            const breakEven = (estBuyPrice / monthlyCost).toFixed(1);
+            const monthlyCost = option.hourlyPrice * 720;
+            const estBuyPrice = gpu?.price;
+            const breakEven = estBuyPrice ? (estBuyPrice / monthlyCost).toFixed(1) : null;
 
             return (
               <div key={i} className="border border-border bg-card/30 p-6 flex flex-col relative group hover:border-primary/50 transition-colors">
                 <div className="absolute top-0 right-0 p-2 text-xs font-mono text-muted-foreground uppercase bg-muted border-b border-l border-border">
-                  {option.availability} AVAIL
+                  {option.liquidity} liquidity · as of {option.asOf}
                 </div>
                 
                 <div className="flex items-center gap-3 mb-4">
@@ -79,13 +79,15 @@ export function CloudScenario() {
 
                 <div className="mt-auto pt-4 border-t border-border/50 text-xs font-mono">
                   <div className="flex justify-between mb-1">
-                    <span className="text-muted-foreground">Est. Hardware Cost</span>
-                    <span>~${estBuyPrice}</span>
+                    <span className="text-muted-foreground">Est. hardware cost ({PRICING_DATA_AS_OF})</span>
+                    <span>{estBuyPrice ? `~$${estBuyPrice.toLocaleString()}` : "—"}</span>
                   </div>
-                  <div className="flex justify-between text-primary">
-                    <span>Rent vs Buy Break-even</span>
-                    <span>{breakEven} months</span>
-                  </div>
+                  {breakEven && (
+                    <div className="flex justify-between text-primary">
+                      <span>Rent vs Buy Break-even</span>
+                      <span>{breakEven} months</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )
