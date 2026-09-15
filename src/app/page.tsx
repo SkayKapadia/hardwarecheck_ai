@@ -12,13 +12,8 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Hydrate state from URL on initial load
-    const params = new URLSearchParams(window.location.search);
-    if (Array.from(params.keys()).length > 0) {
-      store.hydrateFromUrl(params);
-    }
+    // URL hydration is handled once in TopNav (which owns the URL writer).
     setMounted(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!mounted) return null; // Avoid SSR hydration mismatch

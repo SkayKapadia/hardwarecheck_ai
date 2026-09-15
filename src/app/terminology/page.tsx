@@ -1,5 +1,12 @@
 /* eslint-disable react/no-unescaped-entities */
+import type { Metadata } from "next";
 import { BookOpen, Scale, Zap, HardDrive, Layers, PenTool, Search, Microscope, Network } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Terminology & Methodology | Hardware Check AI",
+  description:
+    "A guide to AI model terminology: quantization, KV cache, LoRA, optimizer states, parallelism, and open source vs open weight licensing.",
+};
 
 export default function TerminologyPage() {
   return (
@@ -62,7 +69,7 @@ export default function TerminologyPage() {
           <div className="space-y-4">
             <div>
               <h3 className="font-bold text-foreground">Parameters (e.g., 8B, 70B)</h3>
-              <p className="text-sm text-muted-foreground mt-1">The total number of neural connections (weights) in the model. An "8B" model has 8 Billion parameters. More parameters generally equal higher intelligence but require exponentially more VRAM to run.</p>
+              <p className="text-sm text-muted-foreground mt-1">The total number of neural connections (weights) in the model. An "8B" model has 8 Billion parameters. More parameters generally equal higher intelligence but require proportionally (linearly) more VRAM to run — 2× the parameters ≈ 2× the memory.</p>
             </div>
             <div>
               <h3 className="font-bold text-foreground">Quantization</h3>
@@ -111,11 +118,11 @@ export default function TerminologyPage() {
               </div>
               <div>
                 <h3 className="font-bold text-foreground">Optimizer States (AdamW)</h3>
-                <p className="text-sm text-muted-foreground mt-1">When training a model, the optimizer (like AdamW) keeps track of momentum and variance for every single parameter. This means the optimizer actually consumes <strong>2x to 3x more VRAM</strong> than the model weights themselves! This is why a model that fits in 16GB for inference might require 80GB for training.</p>
+                <p className="text-sm text-muted-foreground mt-1">When training a model, the optimizer (like AdamW) keeps two FP32 states — momentum and variance — for every trainable parameter. That's 8 bytes per parameter, or <strong>4x the BF16 weights</strong> alone (≈6x once you count FP32 master weights). This is why a model that fits in 16GB for inference might require 80GB for training. For LoRA fine-tuning these states only cover the tiny adapter, which is why QLoRA fits on consumer cards.</p>
               </div>
               <div>
                 <h3 className="font-bold text-foreground">Gradient Checkpointing</h3>
-                <p className="text-sm text-muted-foreground mt-1">A critical memory-saving technique used during training. Instead of storing all the intermediate neural activations during the forward pass (which requires massive VRAM), gradient checkpointing throws them away and simply <em>recalculates</em> them during the backward pass. It trades 20% slower training time for up to 60% less VRAM usage.</p>
+                <p className="text-sm text-muted-foreground mt-1">A critical memory-saving technique used during training. Instead of storing all the intermediate neural activations during the forward pass (which requires massive VRAM), gradient checkpointing throws them away and simply <em>recalculates</em> them during the backward pass. It typically trades ~25–40% slower training time for up to ~60–80% less activation memory.</p>
               </div>
             </div>
 
@@ -165,7 +172,7 @@ export default function TerminologyPage() {
                 <Search className="w-4 h-4 text-amber-500" /> RAG
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Retrieval-Augmented Generation. Instead of fine-tuning a model to "memorize" a textbook, you store the textbook in a vector database. When a user asks a question, you search the database for the relevant paragraph and paste it into the model's prompt. This is infinitely cheaper and more accurate than fine-tuning for knowledge retention.
+                Retrieval-Augmented Generation. Instead of fine-tuning a model to "memorize" a textbook, you store the textbook in a vector database. When a user asks a question, you search the database for the relevant paragraph and paste it into the model's prompt. This is usually far cheaper and often more current than fine-tuning for knowledge-heavy tasks.
               </p>
             </div>
           </div>

@@ -1,105 +1,278 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState, useMemo } from "react";
-import gpus from "@/data/gpus.json";
-import models from "@/data/models.json";
-import { getModelWeights, getKVCache, getQuantMetadata, getActivationMemory, getRuntimeReserve, getSafetyMargin, getMultiGPUPerCard, formatParams } from "@/lib/calc";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import gpusJson from "@/data/gpus.json";
+import modelsJson from "@/data/models.json";
+import {
+  GPUSpec,
+  ModelSpec,
+  PRICING_DATA_AS_OF,
+  getModelWeights,
+  getKVCache,
+  getQuantMetadata,
+  getActivationMemory,
+  getRuntimeReserve,
+  getSafetyMargin,
+  getMultiGPUPerCard,
+  getBitsPerWeight,
+  formatParams,
+} from "@/lib/calc";
 import { Slider } from "@/components/ui/Slider";
 import { Calculator, Cpu, Box, Cloud, DollarSign, CheckCircle2 } from "lucide-react";
 
-type UseCase = "coding" | "roleplay" | "research" | "production" | "rag" | "edge" | "agents";
+const GPUS = gpusJson as GPUSpec[];
+const MODELS = modelsJson as unknown as ModelSpec[];
 
-// Pre-defined reasonable GPU combinations prioritizing VRAM/$
-const GPU_COMBOS = [
-  { id: "1x3060", gpus: ["rtx3060"], name: "1x RTX 3060", price: 280, vram: 12 },
-  { id: "1x3090", gpus: ["rtx3090"], name: "1x RTX 3090", price: 700, vram: 24 },
-  { id: "2x3090", gpus: ["rtx3090", "rtx3090"], name: "2x RTX 3090", price: 1400, vram: 48 },
-  { id: "1x4090", gpus: ["rtx4090"], name: "1x RTX 4090", price: 1600, vram: 24 }, // Faster, but less VRAM/$
-  { id: "3x3090", gpus: ["rtx3090", "rtx3090", "rtx3090"], name: "3x RTX 3090", price: 2100, vram: 72 },
-  { id: "4x3090", gpus: ["rtx3090", "rtx3090", "rtx3090", "rtx3090"], name: "4x RTX 3090", price: 2800, vram: 96 },
-  { id: "1xm3max", gpus: ["m3max-128"], name: "1x Mac M3 Max (Unified)", price: 4000, vram: 128 },
-  { id: "1xa100", gpus: ["a100-80gb"], name: "1x A100 80GB", price: 15000, vram: 80 }
+type UseCase = "coding" | "roleplay" | "rag" | "agents" | "edge" | "production";
+
+const USE_CASES: { id: UseCase; label: string }[] = [
+  { id: "coding", label: "Coding Assistant" },
+  { id: "roleplay", label: "Creative & Roleplay" },
+  { id: "rag", label: "Document Analysis (RAG)" },
+  { id: "agents", label: "Autonomous Agents" },
+  { id: "edge", label: "Edge / Lightweight" },
+  { id: "production", label: "Production API" },
 ];
 
-export default function RecommendPage() {
-  const [budget, setBudget] = useState(1500);
-  const [useCase, setUseCase] = useState<UseCase>("coding");
+const TARGET_QUANT = "INT4";
+const MIN_BUDGET = 100;
+const MAX_BUDGET = 50000;
 
-  // Logic Engine
-  const recommendation = useMemo(() => {
-    // 1. Find the best hardware combination within budget
-    const affordableCombos = GPU_COMBOS.filter(c => c.price <= budget);
-    
-    if (affordableCombos.length === 0) {
-      return { type: "cloud" as const, reason: "Budget is too low for local inference." };
+interface Combo {
+  gpu: GPUSpec;
+  count: number;
+  name: string;
+  price: number;
+  totalVram: number;
+}
+
+// Single GPUs from gpus.json plus 2x / 4x uniform combos of
+// consumer/datacenter/amd cards (Macs don't do multi-GPU rigs).
+const COMBOS: Combo[] = (() => {
+  const priced = GPUS.filter((g) => typeof g.price === "number" && g.price > 0);
+  const combos: Combo[] = priced.map((g) => ({
+    gpu: g,
+    count: 1,
+    name: `1x ${g.name}`,
+    price: g.price!,
+    totalVram: g.vram,
+  }));
+  for (const g of priced) {
+    if (g.class === "mac") continue;
+    for (const n of [2, 4]) {
+      combos.push({
+        gpu: g,
+        count: n,
+        name: `${n}x ${g.name}`,
+        price: g.price! * n,
+        totalVram: g.vram * n,
+      });
     }
+  }
+  return combos;
+})();
 
-    // Sort by VRAM descending (prioritize VRAM capacity)
-    affordableCombos.sort((a, b) => b.vram - a.vram);
-    const bestHardware = affordableCombos[0];
+interface UseCaseProfile {
+  ctx: number;
+  minTotalVram?: number;
+  filterModels: (m: ModelSpec) => boolean;
+}
 
-    // 2. Find the best model that fits on this hardware
-    // Filter models by use case (loose heuristic based on names/params)
-    let candidateModels = models;
-    if (useCase === "coding") {
-      candidateModels = models.filter(m => m.name.toLowerCase().includes("coder") || m.name.toLowerCase().includes("llama 3") || m.name.toLowerCase().includes("qwen"));
-    } else if (useCase === "roleplay") {
-      candidateModels = models.filter(m => m.name.toLowerCase().includes("llama") || m.name.toLowerCase().includes("mistral"));
-    } else if (useCase === "rag") {
-      // Prioritize models known for long context or instruction following
-      candidateModels = models.filter(m => m.maxContext >= 8192);
-    } else if (useCase === "edge") {
-      // Restrict to very small models under 9B parameters for edge devices
-      candidateModels = models.filter(m => m.params <= 9000000000);
-    } else if (useCase === "agents") {
-      // Prioritize high intelligence / function calling capable models
-      candidateModels = models.filter(m => m.params >= 30000000000);
-    }
+const PROFILES: Record<UseCase, UseCaseProfile> = {
+  edge: {
+    ctx: 4096,
+    filterModels: (m) => m.params <= 9e9,
+  },
+  roleplay: {
+    ctx: 8192,
+    filterModels: (m) =>
+      m.params <= 13e9 && ["Llama", "Mistral", "Gemma", "Qwen"].includes(m.family),
+  },
+  coding: {
+    ctx: 8192,
+    filterModels: (m) =>
+      m.name.toLowerCase().includes("coder") || m.family === "Qwen" || m.family === "Llama",
+  },
+  rag: {
+    ctx: 32768,
+    filterModels: (m) => m.maxContext >= 32768,
+  },
+  agents: {
+    ctx: 8192,
+    minTotalVram: 48,
+    filterModels: (m) => m.params >= 30e9,
+  },
+  production: {
+    ctx: 8192,
+    filterModels: (m) => m.params >= 7e9,
+  },
+};
 
-    // Sort by parameter count descending to find the biggest/smartest model
-    candidateModels.sort((a, b) => b.params - a.params);
+interface FitResult {
+  weightsGB: number; // weights + quant metadata, aggregate
+  kvGB: number; // KV cache at profile context, aggregate
+  totalPerCard: number; // incl. reserve + safety margin
+  headroomPerCard: number;
+}
 
-    let recommendedModel = null;
-    const targetQuant = "INT4";
+function computeFit(model: ModelSpec, combo: Combo, ctx: number): FitResult {
+  const rawWeights = getModelWeights(model.params, getBitsPerWeight(TARGET_QUANT));
+  const kvCache = getKVCache(model.layers, model.hiddenSize, model.queryHeads, model.kvHeads, ctx, 1, 16);
+  const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, combo.count, kvCache, "tensor_parallel");
+  const metadata = getQuantMetadata(model.params, TARGET_QUANT);
+  const activations = getActivationMemory(ctx, 1, model.hiddenSize, model.layers);
+  const reserve = getRuntimeReserve(combo.gpu);
+  const used = weightsPerCard + kvPerCard + metadata + activations + reserve;
+  const total = used + getSafetyMargin(used);
+  return {
+    weightsGB: rawWeights + metadata,
+    kvGB: kvCache,
+    totalPerCard: total,
+    headroomPerCard: combo.gpu.vram - total,
+  };
+}
 
-    for (const m of candidateModels) {
-      // Test if it fits in INT4
-      const rawWeights = getModelWeights(m.params, 4.5); // INT4 approx
-      const kvCache = getKVCache(m.layers, m.hiddenSize, m.queryHeads, m.kvHeads, 4096, 1, 16);
-      const { weightsPerCard, kvPerCard } = getMultiGPUPerCard(rawWeights, bestHardware.gpus.length, kvCache, "tensor_parallel");
-      const metadata = getQuantMetadata(m.params, "INT4");
-      const activations = getActivationMemory(4096, 1, m.hiddenSize, m.layers);
-      
-      const gObj = gpus.find(g => g.id === bestHardware.gpus[0])!;
-      const reserve = getRuntimeReserve(gObj);
-      
-      const totalUsed = weightsPerCard + kvPerCard + metadata + activations + reserve;
-      const totalWithSafety = totalUsed + getSafetyMargin(totalUsed);
+interface LocalPick {
+  type: "local";
+  combo: Combo;
+  model: ModelSpec;
+  fit: FitResult;
+  score: number;
+}
 
-      if (totalWithSafety <= gObj.vram) {
-        recommendedModel = m;
-        break;
+function recommend(budget: number, useCase: UseCase): LocalPick | { type: "cloud"; reason: string } {
+  const profile = PROFILES[useCase];
+  const candidates = MODELS.filter(profile.filterModels).sort((a, b) => b.params - a.params);
+
+  if (candidates.length === 0) {
+    return { type: "cloud", reason: "No suitable models for this use case." };
+  }
+  const maxCandidateParams = candidates[0].params;
+
+  let best: LocalPick | null = null;
+
+  for (const combo of COMBOS) {
+    if (combo.price > budget) continue;
+    if (profile.minTotalVram && combo.totalVram < profile.minTotalVram) continue;
+    if (useCase === "edge" && combo.gpu.vram < 10) continue;
+
+    // Biggest candidate model (by TOTAL params — MoE must fully fit) that
+    // fits on this combo at the profile's context length.
+    let chosen: { model: ModelSpec; fit: FitResult } | null = null;
+    for (const m of candidates) {
+      const fit = computeFit(m, combo, profile.ctx);
+      if (fit.totalPerCard > combo.gpu.vram) continue;
+      if (useCase === "production") {
+        // Throughput headroom: total VRAM >= 2x the model's full need
+        const aggregateNeed = fit.weightsGB + fit.kvGB + combo.gpu.osReserve * combo.count;
+        if (combo.totalVram < aggregateNeed * 2) continue;
       }
+      chosen = { model: m, fit };
+      break;
+    }
+    if (!chosen) continue;
+
+    let score = 0;
+
+    // Value: prefer using 70-95% of the budget (cheap picks waste capability)
+    const util = combo.price / budget;
+    score += util < 0.7 ? 40 * (util / 0.7) : 40;
+
+    // Model quality: bigger fitting model is better (log scale so the jump
+    // from 8B to 70B matters without swamping every other factor)
+    score += 30 * Math.min(1, Math.log10(chosen.model.params + 1) / Math.log10(maxCandidateParams + 1));
+
+    // Comfortable fit: full marks at >= 30% free VRAM per card
+    score += 20 * Math.min(1, chosen.fit.headroomPerCard / (chosen.fit.totalPerCard * 0.3));
+
+    // Use-case specific preferences
+    switch (useCase) {
+      case "edge":
+        if (combo.count > 1) score -= 50; // single small GPU strongly preferred
+        if (combo.totalVram > 32) score -= 10; // oversized rigs penalized
+        break;
+      case "roleplay":
+        if (combo.count > 1) score -= 40;
+        if (combo.gpu.class === "consumer") score += 10;
+        break;
+      case "coding":
+        if (combo.count === 1) score += 5;
+        if (combo.totalVram < 16) score -= 15;
+        break;
+      case "rag":
+        break; // 32k-context fit requirement already does the filtering
+      case "agents":
+        if (combo.count > 1) score += 5;
+        break;
+      case "production":
+        if (combo.gpu.class === "datacenter") score += 25;
+        else if (combo.gpu.bandwidth >= 1500) score += 10;
+        else if (combo.gpu.class === "consumer") score -= 15;
+        break;
     }
 
-    if (!recommendedModel) {
-       // If no model fits even at INT4, fallback to cloud
-       return { type: "cloud" as const, reason: "Budget hardware cannot fit recommended models." };
+    if (!best || score > best.score) {
+      best = { type: "local", combo, model: chosen.model, fit: chosen.fit, score };
     }
+  }
 
-    return {
-      type: "local" as const,
-      hardware: bestHardware,
-      model: recommendedModel,
-      quant: targetQuant
-    };
+  if (!best) {
+    return { type: "cloud", reason: "No local hardware combination fits this budget and use case." };
+  }
+  return best;
+}
 
+function buildReasons(pick: LocalPick, budget: number, useCase: UseCase): string[] {
+  const { combo, model, fit } = pick;
+  const ctxK = Math.round(PROFILES[useCase].ctx / 1024);
+  const util = Math.round((combo.price / budget) * 100);
+  const reasons = [
+    `Fits ${model.name} ${TARGET_QUANT} (≈${fit.weightsGB.toFixed(1)} GB) with ${fit.headroomPerCard.toFixed(1)} GB per-card headroom for a ${ctxK}K context`,
+    `$${combo.price.toLocaleString()} — ${util}% of your $${budget.toLocaleString()} budget`,
+    combo.count === 1
+      ? "Single card — no multi-GPU complexity or interconnect overhead"
+      : `${combo.count}x tensor-parallel splits weights and KV cache across ${combo.totalVram} GB aggregate VRAM`,
+  ];
+  if (model.architecture === "moe" && model.activeParams) {
+    reasons.push(
+      `MoE: only ${formatParams(model.activeParams)} active per token, so speed is closer to a ${formatParams(model.activeParams)} model than a ${formatParams(model.params)} one`
+    );
+  } else if (combo.gpu.bandwidth >= 2000) {
+    reasons.push(
+      `${combo.gpu.name}'s ${combo.gpu.bandwidth.toLocaleString()} GB/s bandwidth suits high-concurrency serving`
+    );
+  }
+  return reasons.slice(0, 4);
+}
+
+function RecommendInner() {
+  const searchParams = useSearchParams();
+  const [budget, setBudget] = useState(() => {
+    const b = parseInt(searchParams.get("budget") ?? "", 10);
+    return Number.isFinite(b) ? Math.min(MAX_BUDGET, Math.max(MIN_BUDGET, b)) : 1500;
+  });
+  const [useCase, setUseCase] = useState<UseCase>(() => {
+    const uc = searchParams.get("useCase");
+    return USE_CASES.some((u) => u.id === uc) ? (uc as UseCase) : "coding";
+  });
+
+  // Reflect inputs in the URL (no navigation) so the page is shareable
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("budget", budget.toString());
+    url.searchParams.set("useCase", useCase);
+    if (url.search !== window.location.search) {
+      window.history.replaceState({}, "", url.toString());
+    }
   }, [budget, useCase]);
+
+  const recommendation = useMemo(() => recommend(budget, useCase), [budget, useCase]);
 
   return (
     <div className="flex-1 flex gap-8 h-full overflow-hidden p-6 max-w-7xl mx-auto w-full">
-      
+
       {/* Left Panel: Inputs */}
       <div className="w-[40%] flex flex-col gap-8 bg-card/50 border border-border p-8 rounded-xl overflow-y-auto custom-scrollbar">
         <div>
@@ -117,20 +290,13 @@ export default function RecommendPage() {
             Primary Use Case
           </label>
           <div className="grid grid-cols-2 gap-3">
-            {[
-              { id: "coding", label: "Coding Assistant" },
-              { id: "roleplay", label: "Creative & Roleplay" },
-              { id: "rag", label: "Document Analysis (RAG)" },
-              { id: "agents", label: "Autonomous Agents" },
-              { id: "edge", label: "Edge / Lightweight" },
-              { id: "production", label: "Production API" }
-            ].map((uc) => (
+            {USE_CASES.map((uc) => (
               <button
                 key={uc.id}
-                onClick={() => setUseCase(uc.id as UseCase)}
+                onClick={() => setUseCase(uc.id)}
                 className={`py-3 px-4 text-sm font-semibold rounded-lg border transition-colors ${
-                  useCase === uc.id 
-                    ? "bg-primary text-primary-foreground border-primary" 
+                  useCase === uc.id
+                    ? "bg-primary text-primary-foreground border-primary"
                     : "bg-background text-foreground border-border hover:border-primary/50"
                 }`}
               >
@@ -149,16 +315,20 @@ export default function RecommendPage() {
                <DollarSign className="w-4 h-4" /> {budget.toLocaleString()}
              </span>
           </div>
-          <Slider 
-            min={100} max={20000} step={100}
+          <Slider
+            min={MIN_BUDGET} max={MAX_BUDGET} step={100}
             value={[budget]}
             onValueChange={([v]) => setBudget(v)}
           />
           <div className="flex justify-between text-xs text-muted-foreground font-mono">
             <span>$100</span>
-            <span>$20,000+</span>
+            <span>$50,000+</span>
           </div>
         </div>
+
+        <p className="text-xs text-muted-foreground font-mono mt-auto pt-4 border-t border-border">
+          Hardware prices: {PRICING_DATA_AS_OF} snapshot
+        </p>
       </div>
 
       {/* Right Panel: Output */}
@@ -178,7 +348,7 @@ export default function RecommendPage() {
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-2">Optimal Loadout Found</h2>
                   <p className="text-muted-foreground">
-                    Based on your budget of <strong>${budget.toLocaleString()}</strong>, we prioritized maximum VRAM capacity to fit the largest possible model for your <strong>{useCase}</strong> workflow.
+                    Based on your budget of <strong>${budget.toLocaleString()}</strong>, we scored every hardware combination in our database on model fit, budget utilization, and {useCase} requirements.
                   </p>
                 </div>
              </div>
@@ -190,12 +360,12 @@ export default function RecommendPage() {
                    <Cpu className="w-24 h-24" />
                  </div>
                  <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-4">Hardware Array</h3>
-                 <div className="text-2xl font-bold text-foreground mb-1">{recommendation.hardware.name}</div>
+                 <div className="text-2xl font-bold text-foreground mb-1">{recommendation.combo.name}</div>
                  <div className="text-primary font-mono bg-primary/10 inline-block px-2 py-1 rounded text-sm mb-4">
-                   {recommendation.hardware.vram} GB Total VRAM
+                   {recommendation.combo.totalVram} GB Total VRAM
                  </div>
                  <div className="text-sm text-muted-foreground">
-                   Estimated Cost: <strong className="text-foreground">${recommendation.hardware.price.toLocaleString()}</strong>
+                   Estimated Cost: <strong className="text-foreground">${recommendation.combo.price.toLocaleString()}</strong>
                  </div>
                </div>
 
@@ -210,21 +380,31 @@ export default function RecommendPage() {
                    {formatParams(recommendation.model.params)} Parameters
                  </div>
                  <div className="text-sm text-muted-foreground">
-                   Recommended Format: <strong className="text-foreground">{recommendation.quant} Quantization</strong>
+                   Recommended Format: <strong className="text-foreground">{TARGET_QUANT} Quantization</strong>
                  </div>
                </div>
              </div>
 
              <div className="bg-background border border-border p-6 rounded-xl">
                <h3 className="text-lg font-bold text-foreground mb-3">Why this loadout?</h3>
-               <p className="text-muted-foreground text-sm leading-relaxed">
-                 To run a high-quality model for {useCase}, VRAM capacity is the primary bottleneck. The <strong>{recommendation.hardware.name}</strong> provides the cheapest path to {recommendation.hardware.vram}GB of VRAM within your ${budget.toLocaleString()} budget. This exact capacity allows you to load <strong>{recommendation.model.name}</strong> at 4-bit precision, leaving enough reserve memory for a 4K context window without crashing.
-               </p>
+               <ul className="list-disc list-inside space-y-2 text-muted-foreground text-sm leading-relaxed">
+                 {buildReasons(recommendation, budget, useCase).map((reason, i) => (
+                   <li key={i}>{reason}</li>
+                 ))}
+               </ul>
              </div>
           </div>
         )}
       </div>
-      
+
     </div>
+  );
+}
+
+export default function RecommendPage() {
+  return (
+    <Suspense fallback={null}>
+      <RecommendInner />
+    </Suspense>
   );
 }

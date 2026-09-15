@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { TopNav } from "@/components/TopNav";
+import { Footer } from "@/components/Footer";
+import { SITE_URL } from "@/lib/site";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Hardware Check AI | AI Hardware Planner",
   description: "Scenario-based planning dashboard for AI hardware requirements.",
 };
@@ -36,6 +39,7 @@ export default function RootLayout({
         <main className="flex-1 flex flex-col overflow-hidden">
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useStore, Scenario } from "@/lib/store";
+import { isHydrated, markHydrated } from "@/lib/hydration";
 import { Crosshair, Share2, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -12,36 +13,87 @@ export function TopNav() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
 
-  // Sync state to URL without reloading
+  // Hydrate state from the URL exactly once, before the URL writer below is
+  // allowed to run. This effect is declared first so it executes first on
+  // mount — otherwise the writer clobbers shared links with default state.
   useEffect(() => {
+    if (!isHydrated()) {
+      const params = new URLSearchParams(window.location.search);
+      if (isHomePage && Array.from(params.keys()).length > 0) {
+        store.hydrateFromUrl(params);
+      }
+      markHydrated();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync state to URL without reloading (home page only — other routes own
+  // their own search params, e.g. /recommend?budget=&useCase=)
+  useEffect(() => {
+    if (!isHydrated() || !isHomePage) return;
+
     const url = new URL(window.location.href);
     url.searchParams.set("scenario", store.scenario);
     url.searchParams.set("model", store.selectedModel);
     url.searchParams.set("gpu", store.selectedGPUs.join(","));
+    url.searchParams.set("cgpu", store.compareGPUs.join(","));
     url.searchParams.set("quant", store.quantization);
     url.searchParams.set("ctx", store.contextLength.toString());
     url.searchParams.set("batch", store.batchSize.toString());
     url.searchParams.set("offload", store.cpuOffload.toString());
     url.searchParams.set("ram", store.systemRam.toString());
-    
+
     // fine tune
+    url.searchParams.set("fquant", store.finetuneQuant);
     url.searchParams.set("loraRank", store.loraRank.toString());
     url.searchParams.set("loraAlpha", store.loraAlpha.toString());
     url.searchParams.set("modules", store.targetModules.join(","));
     url.searchParams.set("gc", store.gradientCheckpointing.toString());
     url.searchParams.set("tBatch", store.trainBatchSize.toString());
 
-    window.history.replaceState({}, "", url.toString());
-  }, [store]);
+    if (url.search !== window.location.search) {
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [store, isHomePage]);
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleShare = async () => {
+    const text = window.location.href;
+    let ok = false;
+    try {
+      // navigator.clipboard is undefined on non-secure contexts
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      }
+    } catch {
+      ok = false;
+    }
+    if (!ok) {
+      // Legacy fallback for non-secure contexts / denied permissions
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
+    }
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      window.prompt("Copy this link:", text);
+    }
   };
 
   const handleReset = () => {
-    window.location.href = "/"; // simple reset
+    store.resetToDefaults();
+    window.location.href = "/"; // full reload clears URL params too
   };
 
   return (
@@ -59,7 +111,7 @@ export function TopNav() {
           Terminology
         </Link>
       </div>
-      
+
       {isHomePage && (
         <div className="flex bg-muted p-1 border border-border">
           {["inference", "finetune", "compare", "cloud"].map((s) => (
@@ -67,8 +119,8 @@ export function TopNav() {
               key={s}
               onClick={() => store.setScenario(s as Scenario)}
               className={`px-4 py-1.5 text-sm font-sans uppercase tracking-wider transition-colors ${
-                store.scenario === s 
-                  ? "bg-primary/20 text-primary border border-primary/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]" 
+                store.scenario === s
+                  ? "bg-primary/20 text-primary border border-primary/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]"
                   : "text-muted-foreground hover:text-primary/70 border border-transparent"
               }`}
             >
@@ -79,14 +131,14 @@ export function TopNav() {
       )}
 
       <div className="flex items-center gap-3">
-        <button 
+        <button
           onClick={handleShare}
           className="flex items-center gap-2 px-3 py-1.5 border border-primary/30 text-primary hover:bg-primary/10 transition-colors text-sm font-mono uppercase"
         >
           <Share2 className="w-4 h-4" />
           {copied ? "Copied!" : "Share"}
         </button>
-        <button 
+        <button
           onClick={handleReset}
           className="flex items-center gap-2 px-3 py-1.5 border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors text-sm font-mono uppercase"
         >
