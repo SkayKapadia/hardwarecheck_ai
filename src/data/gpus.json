@@ -178,5 +178,35 @@
     "osReserve": 4.0,
     "price": 8000,
     "class": "mac"
+  },
+  {
+    "id": "m5-32",
+    "name": "Apple M5 (32GB)",
+    "vram": 32,
+    "bandwidth": 153,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 2000,
+    "class": "mac"
+  },
+  {
+    "id": "m5pro-64",
+    "name": "Apple M5 Pro (64GB)",
+    "vram": 64,
+    "bandwidth": 307,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 2800,
+    "class": "mac"
+  },
+  {
+    "id": "m5max-128",
+    "name": "Apple M5 Max (128GB)",
+    "vram": 128,
+    "bandwidth": 614,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 5000,
+    "class": "mac"
   }
 ]
