@@ -228,5 +228,25 @@
     "osReserve": 4.0,
     "price": 2200,
     "class": "mac"
+  },
+  {
+    "id": "macstudio-m5max-128",
+    "name": "Mac Studio M5 Max (128GB)",
+    "vram": 128,
+    "bandwidth": 614,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 4000,
+    "class": "mac"
+  },
+  {
+    "id": "macstudio-m5ultra-512",
+    "name": "Mac Studio M5 Ultra (512GB)",
+    "vram": 512,
+    "bandwidth": 1200,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 10000,
+    "class": "mac"
   }
 ]
