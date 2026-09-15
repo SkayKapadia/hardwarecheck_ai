@@ -208,5 +208,25 @@
     "osReserve": 4.0,
     "price": 5000,
     "class": "mac"
+  },
+  {
+    "id": "macmini-m6-32",
+    "name": "Mac Mini M6 (32GB)",
+    "vram": 32,
+    "bandwidth": 170,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 1000,
+    "class": "mac"
+  },
+  {
+    "id": "macmini-m5pro-64",
+    "name": "Mac Mini M5 Pro (64GB)",
+    "vram": 64,
+    "bandwidth": 307,
+    "interconnect": "unified",
+    "osReserve": 4.0,
+    "price": 2200,
+    "class": "mac"
   }
 ]
