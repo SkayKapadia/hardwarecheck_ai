@@ -18,7 +18,7 @@ export function Footer() {
           <a href="mailto:hello@hardwarecheck.ai" className="hover:text-primary transition-colors">
             Contact
           </a>
-          <a href="#" className="hover:text-primary transition-colors">
+          <a href="https://github.com/SkayKapadia/hardwarecheck_ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
             GitHub
           </a>
           <Link href="/privacy" className="hover:text-primary transition-colors">

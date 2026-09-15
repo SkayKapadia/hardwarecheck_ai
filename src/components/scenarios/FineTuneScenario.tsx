@@ -72,7 +72,7 @@ export function FineTuneScenario() {
   const safety = getSafetyMargin(totalUsed);
   const totalWithSafety = totalUsed + safety;
 
-  const availableMemory = store.cpuOffload ? store.systemRam : (selectedGPUsData.length > 0 ? selectedGPUsData[0].vram : 0);
+  const availableMemory = selectedGPUsData.length > 0 ? selectedGPUsData[0].vram : 0;
 
   let statusText = "TRAINABLE";
   let statusColor = "text-primary border-primary bg-primary/10";
