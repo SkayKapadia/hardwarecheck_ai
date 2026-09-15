@@ -1,8 +1,12 @@
 export type ModelArchitecture = "dense" | "moe";
 
+export const MODELS_DATA_AS_OF = "2026-09-15";
+export const PRICING_DATA_AS_OF = "September 2026";
+
 export interface ModelSpec {
   id: string;
   name: string;
+  /** TOTAL parameter count (all experts for MoE). Used for weight memory. */
   params: number;
   layers: number;
   hiddenSize: number;
@@ -11,7 +15,12 @@ export interface ModelSpec {
   vocabSize: number;
   maxContext: number;
   architecture: ModelArchitecture;
+  /** MoE only: parameters active per token. Used for speed estimates. */
   activeParams?: number;
+  family: string;
+  /** HF repo id used to verify this entry. */
+  source?: string;
+  verifiedOn?: string;
 }
 
 export interface GPUSpec {
@@ -21,6 +30,8 @@ export interface GPUSpec {
   bandwidth: number; // in GB/s
   interconnect: string;
   osReserve: number; // in GB
+  price?: number; // USD, see PRICING_DATA_AS_OF
+  class?: string; // "consumer" | "datacenter" | "mac" | "amd"
 }
 
 export interface Benchmark {
@@ -107,16 +118,50 @@ export function getSafetyMargin(total: number): number {
   return total * 0.05; // 5% safety margin
 }
 
-export function getQLoRAOverhead(
-  baseParams: number,
+// SwiGLU intermediate size is approximately 3.5x hidden size for modern archs
+const MLP_INTERMEDIATE_RATIO = 3.5;
+
+// Per-projection LoRA trainable params = rank * (inDim + outDim).
+// Attention projections are hiddenSize x hiddenSize; MLP projections are
+// hiddenSize x (MLP_INTERMEDIATE_RATIO * hiddenSize) and back.
+function loraModuleParams(module: string, rank: number, hiddenSize: number): number {
+  switch (module) {
+    case "q_proj":
+    case "k_proj":
+    case "v_proj":
+    case "o_proj":
+      return rank * (hiddenSize + hiddenSize);
+    case "gate_proj":
+    case "up_proj":
+    case "down_proj": {
+      const intermediate = hiddenSize * MLP_INTERMEDIATE_RATIO;
+      return rank * (hiddenSize + intermediate);
+    }
+    default:
+      // Unknown module: assume a square hiddenSize projection
+      return rank * (hiddenSize + hiddenSize);
+  }
+}
+
+export function getLoRATrainableParams(
   rank: number,
   hiddenSize: number,
-  moduleCount: number
+  targetModules: string[],
+  layers: number
 ): number {
-  // Approx formula: Trainable params ~ (rank * hiddenSize * 2 * moduleCount)
-  // Optimizer state for AdamW is ~14 bytes per trainable parameter
-  const trainableParams = rank * hiddenSize * 2 * moduleCount * 80; // roughly estimating total matrices
-  return (trainableParams * 14) / 1e9;
+  const perLayer = targetModules.reduce(
+    (sum, mod) => sum + loraModuleParams(mod, rank, hiddenSize),
+    0
+  );
+  return layers * perLayer;
+}
+
+export function getLoRAGradientMemory(trainableParams: number): number {
+  return (trainableParams * 4) / 1e9; // FP32 gradients, returns GB
+}
+
+export function getLoRAOptimizerMemory(trainableParams: number): number {
+  return (trainableParams * 8) / 1e9; // AdamW FP32 m+v states, returns GB
 }
 
 export function getMultiGPUPerCard(
@@ -146,28 +191,80 @@ export function getCPUSplit(
   };
 }
 
+export function getRuntimeForQuant(quant: string): string {
+  switch (quant) {
+    case "GGUF Q4_K_M":
+      return "llama.cpp";
+    case "EXL2":
+      return "ExLlamaV2 / TabbyAPI";
+    case "AWQ":
+      return "vLLM / AWQ";
+    case "INT4":
+      return "vLLM / GPTQ";
+    case "INT8":
+    case "FP16":
+      return "vLLM";
+    default:
+      return "vLLM";
+  }
+}
+
+// Honest display range around a memory estimate: runtime overhead varies
+// with allocator, driver, and serving stack.
+export function getMemoryRange(total: number): { low: number; high: number } {
+  return { low: total * 0.93, high: total * 1.18 };
+}
+
+// Achieved memory-bandwidth efficiency per runtime during token generation.
+// Decode is bandwidth-bound: each token reads ~(activeParams) weights once.
+// Single-stream decode achieves roughly 40-60% of peak bandwidth in practice;
+// these sit mid-range so derived estimates don't outrank measured benchmarks.
+const RUNTIME_EFFICIENCY: Record<string, number> = {
+  "GGUF Q4_K_M": 0.55, // llama.cpp
+  AWQ: 0.5, // vLLM
+  INT4: 0.5, // vLLM / GPTQ
+  INT8: 0.5, // vLLM
+  FP16: 0.5, // vLLM
+  EXL2: 0.55, // ExLlamaV2
+};
+const DEFAULT_EFFICIENCY = 0.5;
+
+// Multi-GPU tensor-parallel decode scaling: ~1.7x for 2 cards, diminishing after
+// (interconnect overhead eats into each added card).
+function multiGPUScaling(gpuCount: number): number {
+  if (gpuCount <= 1) return 1;
+  return Math.pow(gpuCount, 0.77); // 2 -> 1.71, 3 -> 2.33, 4 -> 2.91
+}
+
 export function estimateTPS(
-  modelKey: string,
-  gpuKey: string,
+  model: ModelSpec,
+  gpu: GPUSpec,
   quant: string,
   offloadRatio: number, // 0 to 1
   gpuCount: number,
   benchmarks: Benchmark[]
 ): number {
   const bench = benchmarks.find(
-    (b) => b.modelId === modelKey && b.gpuId === gpuKey && b.quant === quant
+    (b) => b.modelId === model.id && b.gpuId === gpu.id && b.quant === quant
   );
 
-  let baseTPS = bench ? bench.tps : 40; // Fallback estimate
+  let baseTPS: number;
+  if (bench) {
+    baseTPS = bench.tps;
+  } else {
+    // Bandwidth-derived estimate: bytes read per token ~= active weights.
+    const activeParams = model.activeParams ?? model.params;
+    const bytesPerToken = (activeParams * getBitsPerWeight(quant)) / 8;
+    const efficiency = RUNTIME_EFFICIENCY[quant] ?? DEFAULT_EFFICIENCY;
+    baseTPS = (gpu.bandwidth * 1e9 * efficiency) / bytesPerToken;
+  }
 
   // Multipliers
   if (offloadRatio > 0) {
     baseTPS = baseTPS * (1 - offloadRatio * 0.8); // High penalty for CPU offload
   }
 
-  if (gpuCount > 1) {
-    baseTPS = baseTPS * 1.8; // Rough multiplier for 2 GPUs, etc.
-  }
+  baseTPS = baseTPS * multiGPUScaling(gpuCount);
 
-  return Math.max(1, baseTPS);
+  return Math.min(500, Math.max(1, baseTPS));
 }

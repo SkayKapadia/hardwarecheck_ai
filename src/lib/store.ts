@@ -2,17 +2,20 @@ import { create } from "zustand";
 
 export type Scenario = "inference" | "finetune" | "compare" | "cloud";
 export type Quantization = "FP16" | "INT8" | "INT4" | "GGUF Q4_K_M" | "AWQ" | "EXL2";
+export type FinetuneQuant = "FP16" | "INT8" | "INT4";
 
 export interface LoadoutState {
   scenario: Scenario;
   selectedModel: string;
   selectedGPUs: string[];
+  compareGPUs: string[];
   quantization: Quantization;
   contextLength: number;
   batchSize: number;
   cpuOffload: boolean;
   systemRam: number; // GB
   // Fine Tune specific
+  finetuneQuant: FinetuneQuant;
   loraRank: number;
   loraAlpha: number;
   targetModules: string[];
@@ -24,34 +27,44 @@ export interface LoadoutState {
   setSelectedModel: (modelId: string) => void;
   toggleGPU: (gpuId: string) => void;
   setSelectedGPUs: (gpuIds: string[]) => void;
+  toggleCompareGPU: (gpuId: string) => void;
+  setCompareGPUs: (gpuIds: string[]) => void;
   setQuantization: (quant: Quantization) => void;
   setContextLength: (ctx: number) => void;
   setBatchSize: (batch: number) => void;
   setCpuOffload: (offload: boolean) => void;
   setSystemRam: (ram: number) => void;
+  setFinetuneQuant: (quant: FinetuneQuant) => void;
   setLoraRank: (rank: number) => void;
   setLoraAlpha: (alpha: number) => void;
   toggleTargetModule: (module: string) => void;
   setGradientCheckpointing: (gc: boolean) => void;
   setTrainBatchSize: (batch: number) => void;
   hydrateFromUrl: (query: URLSearchParams) => void;
+  resetToDefaults: () => void;
 }
 
-export const useStore = create<LoadoutState>((set, get) => ({
-  scenario: "inference",
+const DEFAULT_STATE = {
+  scenario: "inference" as Scenario,
   selectedModel: "llama3-8b",
   selectedGPUs: ["rtx4090"],
-  quantization: "INT4",
+  compareGPUs: ["rtx4090", "rtx3090"],
+  quantization: "INT4" as Quantization,
   contextLength: 4096,
   batchSize: 1,
   cpuOffload: false,
   systemRam: 32,
-  
+
+  finetuneQuant: "INT4" as FinetuneQuant,
   loraRank: 16,
   loraAlpha: 32,
   targetModules: ["q_proj", "v_proj"],
   gradientCheckpointing: true,
   trainBatchSize: 4,
+};
+
+export const useStore = create<LoadoutState>((set, get) => ({
+  ...DEFAULT_STATE,
 
   setScenario: (scenario) => set({ scenario }),
   setSelectedModel: (selectedModel) => set({ selectedModel }),
@@ -67,11 +80,23 @@ export const useStore = create<LoadoutState>((set, get) => ({
     }
   },
   setSelectedGPUs: (selectedGPUs) => set({ selectedGPUs }),
+  toggleCompareGPU: (gpuId) => {
+    const { compareGPUs } = get();
+    if (compareGPUs.includes(gpuId)) {
+      if (compareGPUs.length > 1) {
+        set({ compareGPUs: compareGPUs.filter((id) => id !== gpuId) });
+      }
+    } else {
+      set({ compareGPUs: [...compareGPUs, gpuId] });
+    }
+  },
+  setCompareGPUs: (compareGPUs) => set({ compareGPUs }),
   setQuantization: (quantization) => set({ quantization }),
   setContextLength: (contextLength) => set({ contextLength }),
   setBatchSize: (batchSize) => set({ batchSize }),
   setCpuOffload: (cpuOffload) => set({ cpuOffload }),
   setSystemRam: (systemRam) => set({ systemRam }),
+  setFinetuneQuant: (finetuneQuant) => set({ finetuneQuant }),
   setLoraRank: (loraRank) => set({ loraRank }),
   setLoraAlpha: (loraAlpha) => set({ loraAlpha }),
   toggleTargetModule: (mod) => {
@@ -90,6 +115,7 @@ export const useStore = create<LoadoutState>((set, get) => ({
     if (query.get("scenario")) updates.scenario = query.get("scenario") as Scenario;
     if (query.get("model")) updates.selectedModel = query.get("model")!;
     if (query.get("gpu")) updates.selectedGPUs = query.get("gpu")!.split(",");
+    if (query.get("cgpu")) updates.compareGPUs = query.get("cgpu")!.split(",");
     if (query.get("quant")) updates.quantization = query.get("quant") as Quantization;
     if (query.get("ctx")) updates.contextLength = parseInt(query.get("ctx")!, 10);
     if (query.get("batch")) updates.batchSize = parseInt(query.get("batch")!, 10);
@@ -97,6 +123,7 @@ export const useStore = create<LoadoutState>((set, get) => ({
     if (query.get("ram")) updates.systemRam = parseInt(query.get("ram")!, 10);
     
     // fine tune
+    if (query.get("fquant")) updates.finetuneQuant = query.get("fquant") as FinetuneQuant;
     if (query.get("loraRank")) updates.loraRank = parseInt(query.get("loraRank")!, 10);
     if (query.get("loraAlpha")) updates.loraAlpha = parseInt(query.get("loraAlpha")!, 10);
     if (query.get("modules")) updates.targetModules = query.get("modules")!.split(",");
@@ -105,4 +132,6 @@ export const useStore = create<LoadoutState>((set, get) => ({
 
     set(updates);
   },
+
+  resetToDefaults: () => set({ ...DEFAULT_STATE }),
 }));
