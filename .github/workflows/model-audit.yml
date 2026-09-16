@@ -1,0 +1,55 @@
+name: Model DB audit
+
+on:
+  schedule:
+    - cron: "41 6 * * 1" # weekly, Monday 06:41 UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/data/models.json"
+
+jobs:
+  # Weekly + manual sweep: audit against Hugging Face and open an issue on drift.
+  weekly-audit:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Audit models.json against Hugging Face
+        id: audit
+        continue-on-error: true
+        run: node scripts/audit_models.mjs --report model-audit.md
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-audit-report
+          path: model-audit.md
+          if-no-files-found: ignore
+      - name: Open issue on drift
+        if: steps.audit.outcome == 'failure'
+        uses: peter-evans/create-issue-from-file@v6
+        with:
+          title: "Model DB drift detected vs Hugging Face"
+          content-filepath: model-audit.md
+          labels: data-audit
+
+  # Blocking check when models.json changes in a PR.
+  pr-audit:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Audit models.json against Hugging Face
+        run: node scripts/audit_models.mjs

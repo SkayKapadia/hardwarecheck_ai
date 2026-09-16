@@ -796,7 +796,7 @@
   {
     "id": "EleutherAI/pythia-70m-deduped",
     "name": "pythia 70m deduped",
-    "params": 76677120,
+    "params": 70426672,
     "layers": 6,
     "hiddenSize": 512,
     "queryHeads": 8,
