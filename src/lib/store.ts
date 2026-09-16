@@ -1,8 +1,10 @@
 import { create } from "zustand";
+import type { ZeroStage } from "./calc";
 
 export type Scenario = "inference" | "finetune" | "compare" | "cloud";
 export type Quantization = "FP16" | "INT8" | "INT4" | "GGUF Q4_K_M" | "AWQ" | "EXL2";
 export type FinetuneQuant = "FP16" | "INT8" | "INT4";
+export type FtMode = "lora" | "full";
 
 export interface LoadoutState {
   scenario: Scenario;
@@ -15,6 +17,8 @@ export interface LoadoutState {
   cpuOffload: boolean;
   systemRam: number; // GB
   // Fine Tune specific
+  ftMode: FtMode;
+  zeroStage: ZeroStage;
   finetuneQuant: FinetuneQuant;
   loraRank: number;
   loraAlpha: number;
@@ -35,6 +39,8 @@ export interface LoadoutState {
   setCpuOffload: (offload: boolean) => void;
   setSystemRam: (ram: number) => void;
   setFinetuneQuant: (quant: FinetuneQuant) => void;
+  setFtMode: (mode: FtMode) => void;
+  setZeroStage: (stage: ZeroStage) => void;
   setLoraRank: (rank: number) => void;
   setLoraAlpha: (alpha: number) => void;
   toggleTargetModule: (module: string) => void;
@@ -56,6 +62,8 @@ const DEFAULT_STATE = {
   systemRam: 32,
 
   finetuneQuant: "INT4" as FinetuneQuant,
+  ftMode: "lora" as FtMode,
+  zeroStage: 2 as ZeroStage,
   loraRank: 16,
   loraAlpha: 32,
   targetModules: ["q_proj", "v_proj"],
@@ -97,6 +105,8 @@ export const useStore = create<LoadoutState>((set, get) => ({
   setCpuOffload: (cpuOffload) => set({ cpuOffload }),
   setSystemRam: (systemRam) => set({ systemRam }),
   setFinetuneQuant: (finetuneQuant) => set({ finetuneQuant }),
+  setFtMode: (ftMode) => set({ ftMode }),
+  setZeroStage: (zeroStage) => set({ zeroStage }),
   setLoraRank: (loraRank) => set({ loraRank }),
   setLoraAlpha: (loraAlpha) => set({ loraAlpha }),
   toggleTargetModule: (mod) => {
@@ -123,6 +133,13 @@ export const useStore = create<LoadoutState>((set, get) => ({
     if (query.get("ram")) updates.systemRam = parseInt(query.get("ram")!, 10);
     
     // fine tune
+    if (query.get("ftm") === "lora" || query.get("ftm") === "full") {
+      updates.ftMode = query.get("ftm") as FtMode;
+    }
+    if (query.get("zero")) {
+      const zero = parseInt(query.get("zero")!, 10);
+      if (zero === 1 || zero === 2 || zero === 3) updates.zeroStage = zero as ZeroStage;
+    }
     if (query.get("fquant")) updates.finetuneQuant = query.get("fquant") as FinetuneQuant;
     if (query.get("loraRank")) updates.loraRank = parseInt(query.get("loraRank")!, 10);
     if (query.get("loraAlpha")) updates.loraAlpha = parseInt(query.get("loraAlpha")!, 10);

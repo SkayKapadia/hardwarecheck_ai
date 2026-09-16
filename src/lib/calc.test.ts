@@ -7,6 +7,8 @@ import {
   getLoRATrainableParams,
   getLoRAGradientMemory,
   getLoRAOptimizerMemory,
+  getFullFTMemory,
+  getMinGPUCount,
   estimateTPS,
   getMultiGPUPerCard,
   getMemoryRange,
@@ -14,6 +16,7 @@ import {
   type ModelSpec,
   type GPUSpec,
   type Benchmark,
+  type FullFTOptions,
 } from "./calc";
 import modelsJson from "../data/models.json";
 import gpusJson from "../data/gpus.json";
@@ -253,7 +256,6 @@ describe("getMemoryRange", () => {
 });
 
 // ---------- 10. getRuntimeForQuant ----------
-
 describe("getRuntimeForQuant", () => {
   it("GGUF Q4_K_M -> llama.cpp", () => {
     expect(getRuntimeForQuant("GGUF Q4_K_M")).toBe("llama.cpp");
@@ -360,5 +362,125 @@ describe("benchmarks.json invariants", () => {
       expect(modelIds.has(b.modelId), b.modelId).toBe(true);
       expect(gpuIds.has(b.gpuId), b.gpuId).toBe(true);
     }
+  });
+});
+
+// ---------- 12. Full fine-tuning (ZeRO/FSDP) ----------
+
+describe("getFullFTMemory", () => {
+  // 8B dense model (Llama 3 8B geometry), grad checkpointing on, batch 4 @ 2048
+  const P = 8e9;
+  const opts: FullFTOptions = {
+    gradCheckpointing: true,
+    batchSize: 4,
+    seqLen: 2048,
+    hiddenSize: 4096,
+    layers: 32,
+  };
+  // activations: 4 * 2048 * 4096 * 32 * 3 / 1e9 * 0.2 ≈ 0.644 GB
+  const ACT = 0.644;
+
+  it("ZeRO-3 on 4 GPUs: static state per card ≈ 16 bytes/param / 4 = 32 GB", () => {
+    const m = getFullFTMemory(P, 4, 3, opts);
+    const staticPerCard = m.weightsPerCard + m.gradsPerCard + m.optimizerPerCard;
+    expect(staticPerCard).toBeCloseTo(32, 6);
+    expect(m.weightsPerCard).toBeCloseTo(4, 6); // 2P/N
+    expect(m.gradsPerCard).toBeCloseTo(4, 6); // 2P/N
+    expect(m.optimizerPerCard).toBeCloseTo(24, 6); // 12P/N
+    expect(m.totalPerCard).toBeCloseTo(32 + ACT, 2); // 32 GB static + activations
+  });
+
+  it("ZeRO-1 on 1 GPU needs ≈ 128+ GB total — far beyond a 24 GB card", () => {
+    const m = getFullFTMemory(P, 1, 1, opts);
+    expect(m.weightsPerCard + m.gradsPerCard + m.optimizerPerCard).toBeCloseTo(128, 6);
+    expect(m.totalPerCard).toBeGreaterThan(128);
+    expect(m.totalPerCard).toBeGreaterThan(24);
+  });
+
+  it("ZeRO-1 shards optimizer only: weights and grads stay replicated", () => {
+    const m = getFullFTMemory(P, 2, 1, opts);
+    expect(m.weightsPerCard).toBeCloseTo(16, 6); // 2P full
+    expect(m.gradsPerCard).toBeCloseTo(16, 6); // 2P full
+    expect(m.optimizerPerCard).toBeCloseTo(48, 6); // 12P / 2
+  });
+
+  it("ZeRO-2 additionally shards gradients; only BF16 weights replicated", () => {
+    const m = getFullFTMemory(P, 2, 2, opts);
+    expect(m.weightsPerCard).toBeCloseTo(16, 6); // 2P full
+    expect(m.gradsPerCard).toBeCloseTo(8, 6); // 2P / 2
+    expect(m.optimizerPerCard).toBeCloseTo(48, 6); // 12P / 2
+  });
+
+  it("FSDP alias (= ZeRO-3 math) shards everything evenly: 16P/N per card", () => {
+    for (const n of [1, 2, 8]) {
+      const m = getFullFTMemory(P, n, 3, opts);
+      const staticPerCard = m.weightsPerCard + m.gradsPerCard + m.optimizerPerCard;
+      expect(staticPerCard).toBeCloseTo((16 * P) / n / 1e9, 6);
+    }
+  });
+
+  it("gradient checkpointing cuts activations exactly 5x (x0.2)", () => {
+    const on = getFullFTMemory(P, 4, 3, { ...opts, gradCheckpointing: true });
+    const off = getFullFTMemory(P, 4, 3, { ...opts, gradCheckpointing: false });
+    expect(off.activationsPerCard / on.activationsPerCard).toBeCloseTo(5, 6);
+    expect(on.activationsPerCard).toBeCloseTo(ACT, 2);
+  });
+});
+
+describe("getMinGPUCount", () => {
+  const P = 8e9;
+  const opts: FullFTOptions = {
+    gradCheckpointing: true,
+    batchSize: 4,
+    seqLen: 2048,
+    hiddenSize: 4096,
+    layers: 32,
+  };
+  const usable24 = 24 - 1.5; // 24 GB card minus OS reserve
+
+  it("ZeRO-2 on 24 GB cards needs many GPUs (N > 4)", () => {
+    const n = getMinGPUCount(P, usable24, 2, opts);
+    expect(n).toBeGreaterThan(4);
+    expect(n).toBeLessThanOrEqual(64);
+  });
+
+  it("ZeRO-3 needs strictly fewer GPUs than ZeRO-2 for the same card", () => {
+    const n2 = getMinGPUCount(P, usable24, 2, opts);
+    const n3 = getMinGPUCount(P, usable24, 3, opts);
+    expect(n3).toBeGreaterThan(0);
+    expect(n3).toBeLessThan(n2);
+  });
+
+  it("returned count actually fits; one fewer GPU does not", () => {
+    const n = getMinGPUCount(P, usable24, 3, opts);
+    const fits = getFullFTMemory(P, n, 3, opts).totalPerCard * 1.05;
+    const doesntFit = getFullFTMemory(P, n - 1, 3, opts).totalPerCard * 1.05;
+    expect(fits).toBeLessThanOrEqual(usable24);
+    expect(doesntFit).toBeGreaterThan(usable24);
+  });
+
+  it("returns -1 when even 64 GPUs cannot fit", () => {
+    // ZeRO-1/2 keep 2P weights replicated: a 2T model needs 4 TB per card.
+    expect(getMinGPUCount(2e12, usable24, 2, opts)).toBe(-1);
+  });
+
+  it("FSDP alias: ZeRO-3 count matches the 16P/N sharded total", () => {
+    // 70B at ZeRO-3 on 80 GB cards: 16*70/N GB static per card
+    const n = getMinGPUCount(70e9, 80 - 2, 3, {
+      gradCheckpointing: true,
+      batchSize: 1,
+      seqLen: 2048,
+      hiddenSize: 8192,
+      layers: 80,
+    });
+    expect(n).toBeGreaterThan(0);
+    const m = getFullFTMemory(70e9, n, 3, {
+      gradCheckpointing: true,
+      batchSize: 1,
+      seqLen: 2048,
+      hiddenSize: 8192,
+      layers: 80,
+    });
+    expect(m.totalPerCard * 1.05).toBeLessThanOrEqual(78);
   });
 });

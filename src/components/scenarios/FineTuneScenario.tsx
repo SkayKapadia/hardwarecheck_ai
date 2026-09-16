@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useStore, FinetuneQuant } from "@/lib/store";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
@@ -21,16 +22,28 @@ import {
   getLoRATrainableParams,
   getLoRAGradientMemory,
   getLoRAOptimizerMemory,
+  getFullFTMemory,
+  getMinGPUCount,
   formatParams,
   type ModelSpec,
+  type ZeroStage,
 } from "@/lib/calc";
-import { Box, Cpu, Zap, Activity } from "lucide-react";
+import { Box, Cpu, Zap, Activity, Network } from "lucide-react";
 
 const QUANTS = ["FP16", "INT8", "INT4"];
 const MODULES = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"];
 
+const ZERO_STAGES: ZeroStage[] = [1, 2, 3];
+const ZERO_EXPLAIN: Record<ZeroStage, string> = {
+  1: "ZeRO-1 shards only the optimizer states (FP32 master weights + AdamW moments) across your GPUs. Weights and gradients stay fully replicated on every card.",
+  2: "ZeRO-2 also shards the gradients — only the BF16 weights are fully replicated on each card.",
+  3: "ZeRO-3 shards everything — weights, gradients, and optimizer states — gathering each layer's weights only exactly when needed (budget ~5% extra for comms).",
+};
+
 export function FineTuneScenario() {
   const store = useStore();
+  // FSDP is a presentational alias for ZeRO-3 math — label state only.
+  const [fsdpAlias, setFsdpAlias] = useState(false);
 
   const selectedModelData: ModelSpec =
     getModelById(store.selectedModel) ?? (models[0] as unknown as ModelSpec);
@@ -74,12 +87,36 @@ export function FineTuneScenario() {
 
   const availableMemory = selectedGPUsData.length > 0 ? selectedGPUsData[0].vram : 0;
 
+  const isFull = store.ftMode === "full";
+
+  // Full fine-tuning (BF16 mixed precision, 16 bytes/param, ZeRO-sharded)
+  const ftOpts = {
+    gradCheckpointing: store.gradientCheckpointing,
+    batchSize: store.trainBatchSize,
+    seqLen: store.contextLength,
+    hiddenSize: selectedModelData.hiddenSize,
+    layers: selectedModelData.layers,
+  };
+  const fullFT = getFullFTMemory(
+    selectedModelData.params,
+    selectedGPUsData.length,
+    store.zeroStage,
+    ftOpts
+  );
+  const fullTotalUsed = fullFT.totalPerCard + reserve;
+  const fullSafety = getSafetyMargin(fullTotalUsed);
+  const fullTotalWithSafety = fullTotalUsed + fullSafety;
+  const perGpuUsable = availableMemory - reserve;
+  const minGPUs = getMinGPUCount(selectedModelData.params, perGpuUsable, store.zeroStage, ftOpts);
+  const stageLabel = fsdpAlias && store.zeroStage === 3 ? "FSDP" : `ZeRO-${store.zeroStage}`;
+
   let statusText = "TRAINABLE";
   let statusColor = "text-primary border-primary bg-primary/10";
-  if (totalWithSafety > availableMemory) {
+  const verdictTotal = isFull ? fullTotalWithSafety : totalWithSafety;
+  if (verdictTotal > availableMemory) {
     statusText = "INSUFFICIENT MEMORY";
     statusColor = "text-destructive border-destructive bg-destructive/10";
-  } else if (totalWithSafety > availableMemory * 0.9) {
+  } else if (verdictTotal > availableMemory * 0.9) {
     statusText = "TIGHT FIT";
     statusColor = "text-secondary border-secondary bg-secondary/10";
   }
@@ -98,10 +135,35 @@ export function FineTuneScenario() {
     secPerStep *= 1.3;
   }
 
+  // Full FT trains all params in BF16: each step streams the weights through
+  // ~6 passes-equivalent (forward + full backward + recompute), roughly 2x the
+  // LoRA path, at lower efficiency (~40%) due to optimizer/comm overhead.
+  let fullSecPerStep =
+    ((selectedModelData.params * 2 * 6) / (bandwidth * 1e9 * 0.4)) *
+    (store.trainBatchSize / 4);
+  if (store.gradientCheckpointing) {
+    fullSecPerStep *= 1.3;
+  }
+
   return (
     <div className="flex-1 flex gap-6 h-full overflow-hidden">
       {/* Left Panel: Config */}
       <div className="w-1/2 overflow-y-auto pr-2 flex flex-col gap-8 custom-scrollbar">
+
+        {/* Training Mode */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-mono text-muted-foreground uppercase tracking-widest border-b border-border pb-2 flex items-center gap-2">
+            <Activity className="w-4 h-4" /> Training Mode
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <Pill selected={store.ftMode === "lora"} onClick={() => store.setFtMode("lora")}>
+              LoRA / QLoRA
+            </Pill>
+            <Pill selected={store.ftMode === "full"} onClick={() => store.setFtMode("full")}>
+              Full fine-tune
+            </Pill>
+          </div>
+        </div>
 
         {/* Model Picker */}
         <div className="space-y-4">
@@ -132,7 +194,8 @@ export function FineTuneScenario() {
           </div>
         </div>
 
-        {/* Quantization */}
+        {/* Quantization (LoRA/QLoRA only — full FT trains in BF16) */}
+        {!isFull && (
         <div className="space-y-4">
           <h2 className="text-sm font-mono text-muted-foreground uppercase tracking-widest border-b border-border pb-2 flex items-center gap-2">
             <Zap className="w-4 h-4" /> Base Model Quant
@@ -150,11 +213,46 @@ export function FineTuneScenario() {
             ))}
           </div>
         </div>
+        )}
+
+        {/* ZeRO / FSDP sharding (full fine-tune only) */}
+        {isFull && (
+        <div className="space-y-4">
+          <h2 className="text-sm font-mono text-muted-foreground uppercase tracking-widest border-b border-border pb-2 flex items-center gap-2">
+            <Network className="w-4 h-4" /> Sharding Strategy
+            <InfoPopup content="Full fine-tuning keeps 16 bytes per parameter: BF16 weights (2B) + BF16 gradients (2B) + FP32 master weights (4B) + AdamW moments (8B). ZeRO/FSDP shards that state across your data-parallel GPUs." />
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {ZERO_STAGES.map((s) => (
+              <Pill
+                key={s}
+                selected={store.zeroStage === s && !(s === 3 && fsdpAlias)}
+                onClick={() => { store.setZeroStage(s); setFsdpAlias(false); }}
+              >
+                ZeRO-{s}
+              </Pill>
+            ))}
+            <Pill
+              selected={store.zeroStage === 3 && fsdpAlias}
+              onClick={() => { store.setZeroStage(3); setFsdpAlias(true); }}
+            >
+              FSDP (≈ ZeRO-3)
+            </Pill>
+          </div>
+          <p className="text-xs font-mono text-muted-foreground">
+            {fsdpAlias && store.zeroStage === 3
+              ? "FSDP is PyTorch's native equivalent of ZeRO-3: " + ZERO_EXPLAIN[3]
+              : ZERO_EXPLAIN[store.zeroStage]}
+          </p>
+        </div>
+        )}
 
         {/* Training Params */}
         <div className="space-y-6 bg-card/30 border border-border p-4 relative">
           <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern opacity-10 pointer-events-none" />
 
+          {!isFull && (
+          <>
           <div className="space-y-3 relative z-10">
             <div className="flex justify-between text-sm font-mono items-center">
               <div>
@@ -202,6 +300,15 @@ export function FineTuneScenario() {
               ))}
             </div>
           </div>
+          </>
+          )}
+
+          {isFull && (
+          <div className="relative z-10 text-xs font-mono text-muted-foreground">
+            Full fine-tuning trains <span className="text-primary">{formatParams(selectedModelData.params)}</span> params
+            (100%) in BF16 mixed precision — 16 bytes/param before sharding.
+          </div>
+          )}
 
           <div className="space-y-3 relative z-10 pt-4 border-t border-border mt-4">
             <div className="flex justify-between text-sm font-mono items-center">
@@ -240,14 +347,26 @@ export function FineTuneScenario() {
 
         {statusText === "INSUFFICIENT MEMORY" && (
            <div className="p-3 border border-secondary text-secondary bg-secondary/10 text-sm font-mono">
-             WARNING: Total memory exceeds VRAM. Try enabling Gradient Checkpointing or lowering the Batch Size.
+             {isFull
+               ? "WARNING: Per-card memory exceeds VRAM. Try a higher ZeRO stage, adding more GPUs, enabling Gradient Checkpointing, or lowering the Batch Size."
+               : "WARNING: Total memory exceeds VRAM. Try enabling Gradient Checkpointing or lowering the Batch Size."}
            </div>
         )}
 
+        {isFull ? (
+          <div className="p-3 border border-primary/50 bg-primary/10 text-sm font-mono text-center tracking-wide">
+            {minGPUs === -1 ? (
+              <>Cannot fit even on 64× <span className="text-primary">{selectedGPUsData[0]?.name ?? "GPU"}</span> at {stageLabel}</>
+            ) : (
+              <>Minimum required: <span className="text-primary font-bold">{minGPUs}× {selectedGPUsData[0]?.name ?? "GPU"}</span> at {stageLabel}</>
+            )}
+          </div>
+        ) : (
         <div className="text-xs font-mono text-muted-foreground text-center">
           LoRA trainable: <span className="text-primary">{formatParams(trainableParams)}</span> params (
           {trainablePct < 0.01 ? "<0.01" : trainablePct.toFixed(2)}% of {formatParams(selectedModelData.params)} total)
         </div>
+        )}
 
         <div className="flex items-start gap-8 mt-4">
           {/* Gauge */}
@@ -255,7 +374,13 @@ export function FineTuneScenario() {
             <Gauge
               total={availableMemory}
               size={240}
-              segments={[
+              segments={isFull ? [
+                { label: "Weights (BF16)", value: fullFT.weightsPerCard, color: "#22d3ee" },
+                { label: "Gradients (BF16)", value: fullFT.gradsPerCard, color: "#f59e0b" },
+                { label: "Optimizer + FP32 Master", value: fullFT.optimizerPerCard, color: "#a855f7" },
+                { label: `Activations (ctx: ${store.contextLength}, b: ${store.trainBatchSize})`, value: fullFT.activationsPerCard, color: "#ec4899" },
+                { label: "Safety", value: fullSafety, color: "#10b981" },
+              ] : [
                 { label: "Base Weights", value: weightsPerCard, color: "#22d3ee" },
                 { label: `Activations & Logits (ctx: ${store.contextLength}, b: ${store.trainBatchSize})`, value: kvPerCard, color: "#10b981" },
                 { label: "Activations", value: activations, color: "#ec4899" },
@@ -268,7 +393,14 @@ export function FineTuneScenario() {
 
           {/* List */}
           <div className="flex-1 space-y-3 pt-4">
-            {[
+            {(isFull ? [
+              { label: `Weights (BF16, ${stageLabel})`, val: fullFT.weightsPerCard, color: "bg-primary" },
+              { label: "Gradients (BF16)", val: fullFT.gradsPerCard, color: "bg-secondary" },
+              { label: "Optimizer (FP32 master + AdamW)", val: fullFT.optimizerPerCard, color: "bg-purple-500" },
+              { label: `Activations (ctx: ${store.contextLength}, b: ${store.trainBatchSize})`, val: fullFT.activationsPerCard, color: "bg-pink-500" },
+              { label: "OS Reserve", val: reserve, color: "bg-slate-500" },
+              { label: "Safety Margin", val: fullSafety, color: "bg-emerald-500" },
+            ] : [
               { label: "Base Weights", val: weightsPerCard, color: "bg-primary" },
               { label: `Activations & Logits (ctx: ${store.contextLength}, b: ${store.trainBatchSize})`, val: kvPerCard, color: "bg-emerald-500" },
               { label: "Activation Memory", val: activations, color: "bg-pink-500" },
@@ -276,7 +408,7 @@ export function FineTuneScenario() {
               { label: "Optimizer (AdamW)", val: optimizerStates, color: "bg-purple-500" },
               { label: "OS Reserve", val: reserve, color: "bg-slate-500" },
               { label: "Safety Margin", val: safety, color: "bg-emerald-500" },
-            ].map((item, i) => (
+            ]).map((item, i) => (
               <div key={i} className="text-sm font-mono flex items-center justify-between border-b border-border/50 pb-1">
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${item.color}`} />
@@ -287,7 +419,7 @@ export function FineTuneScenario() {
             ))}
             <div className="text-sm font-mono flex items-center justify-between pt-2 text-primary font-bold">
               <span>TOTAL (Per Card)</span>
-              <span>{totalWithSafety.toFixed(2)} GB</span>
+              <span>{(isFull ? fullTotalWithSafety : totalWithSafety).toFixed(2)} GB</span>
             </div>
           </div>
         </div>
@@ -297,7 +429,9 @@ export function FineTuneScenario() {
             <Activity className="w-4 h-4" /> Estimated Speed (rough estimate, assumes 2048-token sequences)
           </div>
           <div className="text-2xl font-mono text-primary font-bold">
-            ~{secPerStep < 10 ? secPerStep.toFixed(1) : secPerStep.toFixed(0)} <span className="text-sm text-muted-foreground">sec/step</span>
+            {(() => { const s = isFull ? fullSecPerStep : secPerStep; return (
+              <>~{s < 10 ? s.toFixed(1) : s.toFixed(0)} <span className="text-sm text-muted-foreground">sec/step</span></>
+            ); })()}
           </div>
         </div>
       </div>

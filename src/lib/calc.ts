@@ -164,6 +164,84 @@ export function getLoRAOptimizerMemory(trainableParams: number): number {
   return (trainableParams * 8) / 1e9; // AdamW FP32 m+v states, returns GB
 }
 
+// ---------- Full fine-tuning (BF16 mixed precision + ZeRO/FSDP sharding) ----------
+
+export type ZeroStage = 1 | 2 | 3;
+
+export interface FullFTOptions {
+  gradCheckpointing: boolean;
+  batchSize: number;
+  seqLen: number;
+  hiddenSize: number;
+  layers: number;
+}
+
+export interface FullFTMemory {
+  weightsPerCard: number;
+  gradsPerCard: number;
+  optimizerPerCard: number;
+  activationsPerCard: number;
+  totalPerCard: number;
+}
+
+// Classic BF16 mixed-precision recipe = 16 bytes/param:
+//   BF16 weights 2B + BF16 gradients 2B + FP32 master weights 4B + AdamW m+v 8B.
+// ZeRO shards across N data-parallel GPUs:
+//   stage 1: optimizer-side (master 4B + Adam 8B) / N; weights + grads replicated
+//   stage 2: additionally gradients / N; only BF16 weights replicated
+//   stage 3 (= FSDP): everything / N (weights gathered per layer at runtime)
+export function getFullFTMemory(
+  params: number,
+  gpuCount: number,
+  zeroStage: ZeroStage,
+  opts: FullFTOptions
+): FullFTMemory {
+  const n = Math.max(1, gpuCount);
+  const weights = (params * 2) / 1e9; // BF16 weights, GB
+  const grads = (params * 2) / 1e9; // BF16 gradients, GB
+  const optimizer = (params * 12) / 1e9; // FP32 master weights (4B) + AdamW m+v (8B), GB
+
+  const weightsPerCard = zeroStage === 3 ? weights / n : weights;
+  const gradsPerCard = zeroStage >= 2 ? grads / n : grads;
+  const optimizerPerCard = optimizer / n; // sharded in every ZeRO stage
+
+  let activationsPerCard = getActivationMemory(
+    opts.seqLen,
+    opts.batchSize,
+    opts.hiddenSize,
+    opts.layers
+  );
+  if (opts.gradCheckpointing) {
+    activationsPerCard *= 0.2; // same recompute trade-off as the LoRA path
+  }
+
+  return {
+    weightsPerCard,
+    gradsPerCard,
+    optimizerPerCard,
+    activationsPerCard,
+    totalPerCard: weightsPerCard + gradsPerCard + optimizerPerCard + activationsPerCard,
+  };
+}
+
+// Smallest N (1..64) where per-card memory + 5% safety fits in
+// perGpuUsableVram. Callers should pass VRAM *after* subtracting the OS
+// reserve (vram - osReserve). Returns -1 when even 64 GPUs cannot fit.
+export function getMinGPUCount(
+  params: number,
+  perGpuUsableVram: number,
+  zeroStage: ZeroStage,
+  opts: FullFTOptions
+): number {
+  for (let n = 1; n <= 64; n++) {
+    const { totalPerCard } = getFullFTMemory(params, n, zeroStage, opts);
+    if (totalPerCard + getSafetyMargin(totalPerCard) <= perGpuUsableVram) {
+      return n;
+    }
+  }
+  return -1;
+}
+
 export function getMultiGPUPerCard(
   totalWeights: number,
   gpuCount: number,

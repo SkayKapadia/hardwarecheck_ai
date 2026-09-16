@@ -44,6 +44,8 @@ export function TopNav() {
     url.searchParams.set("ram", store.systemRam.toString());
 
     // fine tune
+    url.searchParams.set("ftm", store.ftMode);
+    url.searchParams.set("zero", store.zeroStage.toString());
     url.searchParams.set("fquant", store.finetuneQuant);
     url.searchParams.set("loraRank", store.loraRank.toString());
     url.searchParams.set("loraAlpha", store.loraAlpha.toString());
