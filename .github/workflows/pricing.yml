@@ -1,0 +1,39 @@
+name: Daily cloud pricing refresh
+
+on:
+  schedule:
+    - cron: "47 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch latest cloud pricing
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          LAMBDA_API_KEY: ${{ secrets.LAMBDA_API_KEY }}
+        run: node scripts/fetch_pricing.mjs
+
+      - name: Commit and push if cloud.json changed
+        run: |
+          if git diff --quiet -- src/data/cloud.json; then
+            echo "No pricing changes; nothing to commit."
+            exit 0
+          fi
+          git config user.name "pricing-bot"
+          git config user.email "pricing-bot@users.noreply.github.com"
+          git add src/data/cloud.json
+          git commit -m "chore: daily cloud pricing refresh"
+          git push
