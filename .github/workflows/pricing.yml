@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   refresh:
@@ -26,14 +27,19 @@ jobs:
           LAMBDA_API_KEY: ${{ secrets.LAMBDA_API_KEY }}
         run: node scripts/fetch_pricing.mjs
 
-      - name: Commit and push if cloud.json changed
-        run: |
-          if git diff --quiet -- src/data/cloud.json; then
-            echo "No pricing changes; nothing to commit."
-            exit 0
-          fi
-          git config user.name "pricing-bot"
-          git config user.email "pricing-bot@users.noreply.github.com"
-          git add src/data/cloud.json
-          git commit -m "chore: daily cloud pricing refresh"
-          git push
+      # main is a protected branch (PRs required), so the bot cannot push
+      # directly — open (or update) a pull request with the new prices instead.
+      - name: Open pull request if cloud.json changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/daily-pricing
+          delete-branch: true
+          title: "chore: daily cloud pricing refresh"
+          commit-message: "chore: daily cloud pricing refresh"
+          body: |
+            Automated daily refresh of `src/data/cloud.json` from provider APIs
+            (Vast.ai live; RunPod/Lambda when API keys are configured).
+
+            Liquidity badges are derived from real offer counts. Review the diff
+            and merge — Vercel deploys automatically on merge.
+          labels: pricing, automated
