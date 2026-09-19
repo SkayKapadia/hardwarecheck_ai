@@ -35,7 +35,7 @@
     "provider": "Vast.ai",
     "gpuId": "rtx4090",
     "vram": 24,
-    "hourlyPrice": 0.45,
+    "hourlyPrice": 0.37,
     "liquidity": "typical",
     "asOf": "2026-09"
   },
@@ -43,7 +43,7 @@
     "provider": "Vast.ai",
     "gpuId": "rtx3090",
     "vram": 24,
-    "hourlyPrice": 0.19,
+    "hourlyPrice": 0.15,
     "liquidity": "typical",
     "asOf": "2026-09"
   },
@@ -51,15 +51,15 @@
     "provider": "Vast.ai",
     "gpuId": "a100-80gb",
     "vram": 80,
-    "hourlyPrice": 0.80,
-    "liquidity": "variable",
+    "hourlyPrice": 1,
+    "liquidity": "typical",
     "asOf": "2026-09"
   },
   {
     "provider": "Lambda Labs",
     "gpuId": "a100-80gb",
     "vram": 80,
-    "hourlyPrice": 1.50,
+    "hourlyPrice": 1.5,
     "liquidity": "scarce",
     "asOf": "2026-09"
   },
@@ -69,6 +69,14 @@
     "vram": 80,
     "hourlyPrice": 3.19,
     "liquidity": "scarce",
+    "asOf": "2026-09"
+  },
+  {
+    "provider": "Vast.ai",
+    "gpuId": "h100-80gb",
+    "vram": 80,
+    "hourlyPrice": 2.67,
+    "liquidity": "variable",
     "asOf": "2026-09"
   }
 ]
