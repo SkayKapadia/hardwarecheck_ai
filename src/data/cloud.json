@@ -35,7 +35,7 @@
     "provider": "Vast.ai",
     "gpuId": "rtx4090",
     "vram": 24,
-    "hourlyPrice": 0.37,
+    "hourlyPrice": 0.4,
     "liquidity": "typical",
     "asOf": "2026-09"
   },
@@ -75,7 +75,7 @@
     "provider": "Vast.ai",
     "gpuId": "h100-80gb",
     "vram": 80,
-    "hourlyPrice": 2.67,
+    "hourlyPrice": 2.9,
     "liquidity": "variable",
     "asOf": "2026-09"
   }
