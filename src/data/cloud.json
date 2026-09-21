@@ -75,7 +75,7 @@
     "provider": "Vast.ai",
     "gpuId": "h100-80gb",
     "vram": 80,
-    "hourlyPrice": 2.9,
+    "hourlyPrice": 2.7,
     "liquidity": "variable",
     "asOf": "2026-09"
   }
